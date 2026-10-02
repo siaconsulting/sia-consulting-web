@@ -4,6 +4,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import type { Page, Post } from '@/payload-types'
+import { resolveLinkHref } from '@/utilities/links'
 
 type CMSLinkType = {
   appearance?: 'inline' | ButtonProps['variant']
@@ -12,11 +13,12 @@ type CMSLinkType = {
   label?: string | null
   newTab?: boolean | null
   reference?: {
-    relationTo: 'pages' | 'posts'
-    value: Page | Post | string | number
+    relationTo: string
+    value: { slug?: string | null } | Page | Post | string | number
   } | null
+  route?: string | null
   size?: ButtonProps['size'] | null
-  type?: 'custom' | 'reference' | null
+  type?: 'custom' | 'reference' | 'route' | null
   url?: string | null
 }
 
@@ -29,16 +31,12 @@ export const CMSLink: React.FC<CMSLinkType> = (props) => {
     label,
     newTab,
     reference,
+    route,
     size: sizeFromProps,
     url,
   } = props
 
-  const href =
-    type === 'reference' && typeof reference?.value === 'object' && reference.value.slug
-      ? `${reference?.relationTo !== 'pages' ? `/${reference?.relationTo}` : ''}/${
-          reference.value.slug
-        }`
-      : url
+  const href = resolveLinkHref({ type, reference, route, url })
 
   if (!href) return null
 

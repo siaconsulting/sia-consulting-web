@@ -1,10 +1,13 @@
 import { timingSafeEqual } from 'node:crypto'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getEditorialRevalidationTargets, type EditorialCollection } from '@/utilities/editorialRevalidation'
+import { getGlobalRevalidationTargets, PUBLIC_GLOBALS, type PublicGlobal } from '@/utilities/globalRevalidation'
 
 export const runtime = 'nodejs'
 
-const collections = new Set<EditorialCollection>(['services', 'sectors', 'trainings'])
+const collections = new Set<EditorialCollection>([
+  'services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'references', 'resources',
+])
 
 const matchesSecret = (provided: string | null, expected: string) => {
   if (!provided) return false
@@ -31,9 +34,22 @@ export async function POST(request: Request) {
     return new Response(null, { status: 400 })
   }
 
-  if (!body || typeof body !== 'object' || !('collection' in body) || !('slugs' in body)) {
+  if (!body || typeof body !== 'object') {
     return new Response(null, { status: 400 })
   }
+
+  if ('global' in body) {
+    const { global } = body as { global: unknown }
+    if (typeof global !== 'string' || !PUBLIC_GLOBALS.includes(global as PublicGlobal)) {
+      return new Response(null, { status: 400 })
+    }
+    const targets = getGlobalRevalidationTargets(global as PublicGlobal)
+    for (const { path, type } of targets.paths) revalidatePath(path, type)
+    for (const tag of targets.tags) revalidateTag(tag, 'max')
+    return new Response(null, { status: 204 })
+  }
+
+  if (!('collection' in body) || !('slugs' in body)) return new Response(null, { status: 400 })
 
   const { collection, slugs } = body as { collection: unknown; slugs: unknown }
   if (

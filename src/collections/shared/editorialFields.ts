@@ -1,8 +1,9 @@
 import type { Field, RowField, TextFieldSingleValidation } from 'payload'
 import { slugField } from 'payload'
 
-export const editorialSlugField = (): RowField =>
+export const editorialSlugField = (useAsSlug = 'title'): RowField =>
   slugField({
+    useAsSlug,
     required: true,
     overrides: (field) => {
       const slug = field.fields.find((candidate) => 'name' in candidate && candidate.name === 'slug')
@@ -21,8 +22,8 @@ export const editorialSlugField = (): RowField =>
     },
   })
 
-export const editorialHeroImageField = (): Field => ({
-  name: 'heroImage',
+export const editorialHeroImageField = (name = 'heroImage'): Field => ({
+  name,
   type: 'upload',
   relationTo: 'media',
   label: 'Image principale',
@@ -50,3 +51,20 @@ export const editorialOrganizationFields = (): Field[] => [
     },
   },
 ]
+
+export const editorialPublishedAtField = (): Field => ({
+  name: 'publishedAt',
+  type: 'date',
+  label: 'Date de publication',
+  admin: {
+    date: { pickerAppearance: 'dayAndTime' },
+    description: 'Date éditoriale affichée publiquement; elle est définie automatiquement à la première publication si elle est laissée vide.',
+    position: 'sidebar',
+  },
+  hooks: {
+    beforeChange: [({ siblingData, value }) => {
+      if (siblingData._status === 'published' && !value) return new Date()
+      return value
+    }],
+  },
+})

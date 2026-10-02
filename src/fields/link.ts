@@ -1,6 +1,7 @@
 import type { Field, GroupField } from 'payload'
 
 import deepMerge from '@/utilities/deepMerge'
+import { INTERNAL_ROUTES, validateExternalURL } from '@/utilities/links'
 
 export type LinkAppearances = 'default' | 'outline'
 
@@ -18,12 +19,14 @@ export const appearanceOptions: Record<LinkAppearances, { label: string; value: 
 type LinkType = (options?: {
   appearances?: LinkAppearances[] | false
   disableLabel?: boolean
+  name?: string
+  required?: boolean
   overrides?: Partial<GroupField>
 }) => Field
 
-export const link: LinkType = ({ appearances, disableLabel = false, overrides = {} } = {}) => {
+export const link: LinkType = ({ appearances, disableLabel = false, name = 'link', required = true, overrides = {} } = {}) => {
   const linkResult: GroupField = {
-    name: 'link',
+    name,
     type: 'group',
     admin: {
       hideGutter: true,
@@ -42,11 +45,15 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
             defaultValue: 'reference',
             options: [
               {
-                label: 'Internal link',
+                label: 'Contenu lié',
                 value: 'reference',
               },
               {
-                label: 'Custom URL',
+                label: 'Route interne',
+                value: 'route',
+              },
+              {
+                label: 'Lien externe',
                 value: 'custom',
               },
             ],
@@ -60,7 +67,7 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
               },
               width: '50%',
             },
-            label: 'Open in new tab',
+            label: 'Ouvrir dans un nouvel onglet',
           },
         ],
       },
@@ -74,9 +81,19 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
       admin: {
         condition: (_, siblingData) => siblingData?.type === 'reference',
       },
-      label: 'Document to link to',
-      relationTo: ['pages', 'posts'],
-      required: true,
+      label: 'Contenu à lier',
+      relationTo: ['pages', 'posts', 'services', 'sectors', 'trainings', 'publications', 'case-studies', 'resources', 'team-members', 'references'],
+      required,
+    },
+    {
+      name: 'route',
+      type: 'select',
+      admin: {
+        condition: (_, siblingData) => siblingData?.type === 'route',
+      },
+      label: 'Route du site',
+      options: [...INTERNAL_ROUTES],
+      required,
     },
     {
       name: 'url',
@@ -84,8 +101,9 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
       admin: {
         condition: (_, siblingData) => siblingData?.type === 'custom',
       },
-      label: 'Custom URL',
-      required: true,
+      label: 'URL externe',
+      required,
+      validate: validateExternalURL,
     },
   ]
 
@@ -108,8 +126,8 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
           admin: {
             width: '50%',
           },
-          label: 'Label',
-          required: true,
+          label: 'Texte du lien',
+          required,
         },
       ],
     })
@@ -128,7 +146,7 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
       name: 'appearance',
       type: 'select',
       admin: {
-        description: 'Choose how the link should be rendered.',
+        description: 'Choisissez le style du lien.',
       },
       defaultValue: 'default',
       options: appearanceOptionsToUse,

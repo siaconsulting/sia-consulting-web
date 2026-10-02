@@ -2,6 +2,11 @@ export const editorialPublicPaths = {
   services: '/expertises',
   sectors: '/secteurs',
   trainings: '/formations',
+  publications: '/publications',
+  'case-studies': '/etudes-de-cas',
+  'team-members': '/equipe',
+  references: '/references',
+  resources: '/ressources',
 } as const
 
 export type EditorialCollection = keyof typeof editorialPublicPaths

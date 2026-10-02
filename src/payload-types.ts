@@ -72,6 +72,14 @@ export interface Config {
     services: Service;
     sectors: Sector;
     trainings: Training;
+    publications: Publication;
+    'case-studies': CaseStudy;
+    'team-members': TeamMember;
+    references: Reference;
+    resources: Resource;
+    'contact-requests': ContactRequest;
+    'service-requests': ServiceRequest;
+    'training-requests': TrainingRequest;
     media: Media;
     categories: Category;
     users: User;
@@ -91,6 +99,12 @@ export interface Config {
       services: 'services';
       trainings: 'trainings';
     };
+    'team-members': {
+      publications: 'publications';
+    };
+    references: {
+      caseStudies: 'case-studies';
+    };
     'payload-folders': {
       documentsAndFolders: 'payload-folders' | 'media';
     };
@@ -101,6 +115,14 @@ export interface Config {
     services: ServicesSelect<false> | ServicesSelect<true>;
     sectors: SectorsSelect<false> | SectorsSelect<true>;
     trainings: TrainingsSelect<false> | TrainingsSelect<true>;
+    publications: PublicationsSelect<false> | PublicationsSelect<true>;
+    'case-studies': CaseStudiesSelect<false> | CaseStudiesSelect<true>;
+    'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
+    references: ReferencesSelect<false> | ReferencesSelect<true>;
+    resources: ResourcesSelect<false> | ResourcesSelect<true>;
+    'contact-requests': ContactRequestsSelect<false> | ContactRequestsSelect<true>;
+    'service-requests': ServiceRequestsSelect<false> | ServiceRequestsSelect<true>;
+    'training-requests': TrainingRequestsSelect<false> | TrainingRequestsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -122,10 +144,16 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'site-settings': SiteSetting;
+    'contact-information': ContactInformation;
+    'home-settings': HomeSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'contact-information': ContactInformationSelect<false> | ContactInformationSelect<true>;
+    'home-settings': HomeSettingsSelect<false> | HomeSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -134,6 +162,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      notifySubmission: TaskNotifySubmission;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -188,7 +217,7 @@ export interface Page {
     links?:
       | {
           link: {
-            type?: ('reference' | 'custom') | null;
+            type?: ('reference' | 'route' | 'custom') | null;
             newTab?: boolean | null;
             reference?:
               | ({
@@ -198,11 +227,59 @@ export interface Page {
               | ({
                   relationTo: 'posts';
                   value: number | Post;
+                } | null)
+              | ({
+                  relationTo: 'services';
+                  value: number | Service;
+                } | null)
+              | ({
+                  relationTo: 'sectors';
+                  value: number | Sector;
+                } | null)
+              | ({
+                  relationTo: 'trainings';
+                  value: number | Training;
+                } | null)
+              | ({
+                  relationTo: 'publications';
+                  value: number | Publication;
+                } | null)
+              | ({
+                  relationTo: 'case-studies';
+                  value: number | CaseStudy;
+                } | null)
+              | ({
+                  relationTo: 'resources';
+                  value: number | Resource;
+                } | null)
+              | ({
+                  relationTo: 'team-members';
+                  value: number | TeamMember;
+                } | null)
+              | ({
+                  relationTo: 'references';
+                  value: number | Reference;
                 } | null);
+            route?:
+              | (
+                  | '/'
+                  | '/a-propos'
+                  | '/expertises'
+                  | '/secteurs'
+                  | '/formations'
+                  | '/publications'
+                  | '/etudes-de-cas'
+                  | '/ressources'
+                  | '/equipe'
+                  | '/references'
+                  | '/contact'
+                  | '/recherche'
+                )
+              | null;
             url?: string | null;
             label: string;
             /**
-             * Choose how the link should be rendered.
+             * Choisissez le style du lien.
              */
             appearance?: ('default' | 'outline') | null;
           };
@@ -450,339 +527,6 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock".
- */
-export interface CallToActionBlock {
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'cta';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ContentBlock".
- */
-export interface ContentBlock {
-  columns?:
-    | {
-        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
-        richText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        enableLink?: boolean | null;
-        link?: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'content';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
- */
-export interface MediaBlock {
-  media: number | Media;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'mediaBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ArchiveBlock".
- */
-export interface ArchiveBlock {
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  populateBy?: ('collection' | 'selection') | null;
-  relationTo?: 'posts' | null;
-  categories?: (number | Category)[] | null;
-  limit?: number | null;
-  selectedDocs?:
-    | {
-        relationTo: 'posts';
-        value: number | Post;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'archive';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "FormBlock".
- */
-export interface FormBlock {
-  form: number | Form;
-  enableIntro?: boolean | null;
-  introContent?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'formBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "forms".
- */
-export interface Form {
-  id: number;
-  title: string;
-  fields?:
-    | (
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            defaultValue?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'checkbox';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'country';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'email';
-          }
-        | {
-            message?: {
-              root: {
-                type: string;
-                children: {
-                  type: any;
-                  version: number;
-                  [k: string]: unknown;
-                }[];
-                direction: ('ltr' | 'rtl') | null;
-                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                indent: number;
-                version: number;
-              };
-              [k: string]: unknown;
-            } | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'message';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'number';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            placeholder?: string | null;
-            options?:
-              | {
-                  label: string;
-                  value: string;
-                  id?: string | null;
-                }[]
-              | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'select';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'state';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'text';
-          }
-        | {
-            name: string;
-            label?: string | null;
-            width?: number | null;
-            defaultValue?: string | null;
-            required?: boolean | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'textarea';
-          }
-      )[]
-    | null;
-  submitButtonLabel?: string | null;
-  confirmationType?: ('message' | 'redirect') | null;
-  confirmationMessage?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  redirect?: {
-    url: string;
-  };
-  emails?:
-    | {
-        emailTo?: string | null;
-        cc?: string | null;
-        bcc?: string | null;
-        replyTo?: string | null;
-        emailFrom?: string | null;
-        subject: string;
-        message?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1045,6 +789,873 @@ export interface Training {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publications".
+ */
+export interface Publication {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Résumé affiché dans les listes (320 caractères maximum).
+   */
+  excerpt: string;
+  type: 'article' | 'analysis' | 'technical_note' | 'news' | 'opinion' | 'regulatory_study';
+  /**
+   * Image facultative utilisée pour illustrer la fiche.
+   */
+  coverImage?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Libellés simples, sans taxonomie partagée pour le moment.
+   */
+  topics?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Facultatif; seuls les profils publics pourront être affichés sur le site.
+   */
+  authors?: (number | TeamMember)[] | null;
+  services?: (number | Service)[] | null;
+  sectors?: (number | Sector)[] | null;
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  /**
+   * Date éditoriale affichée publiquement; elle est définie automatiquement à la première publication si elle est laissée vide.
+   */
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members".
+ */
+export interface TeamMember {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  jobTitle: string;
+  shortBio: string;
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  photo?: (number | null) | Media;
+  linkedin?: string | null;
+  /**
+   * Cette adresse sera destinée à être affichée publiquement.
+   */
+  publicEmail?: string | null;
+  services?: (number | Service)[] | null;
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  /**
+   * Les auteurs sont affectés depuis chaque publication.
+   */
+  publications?: {
+    docs?: (number | Publication)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies".
+ */
+export interface CaseStudy {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  shortDescription: string;
+  /**
+   * Image facultative utilisée pour illustrer la fiche.
+   */
+  coverImage?: (number | null) | Media;
+  /**
+   * La publication est bloquée tant que les informations client ne correspondent pas au mode choisi.
+   */
+  clientDisclosure?: ('named' | 'anonymous') | null;
+  clientReference?: (number | null) | Reference;
+  /**
+   * Ex. « Compagnie d’assurance régionale ». Ne saisissez aucun nom réel.
+   */
+  anonymousClientLabel?: string | null;
+  context: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  challenge: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  approach: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  results: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  metrics?:
+    | {
+        label: string;
+        value: string;
+        /**
+         * Facultatif (%, jours, etc.).
+         */
+        unit?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  services?: (number | Service)[] | null;
+  sectors?: (number | Sector)[] | null;
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  /**
+   * Date éditoriale affichée publiquement; elle est définie automatiquement à la première publication si elle est laissée vide.
+   */
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "references".
+ */
+export interface Reference {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  logo?: (number | null) | Media;
+  website?: string | null;
+  shortDescription?: string | null;
+  type: 'client' | 'partner' | 'institution';
+  sectors?: (number | Sector)[] | null;
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  /**
+   * La référence est associée depuis chaque étude; les études anonymisées ne figurent pas ici.
+   */
+  caseStudies?: {
+    docs?: (number | CaseStudy)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources".
+ */
+export interface Resource {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  type: 'brochure' | 'catalogue' | 'report' | 'note' | 'institutional';
+  shortDescription: string;
+  /**
+   * Le fichier et son URL seront publiquement accessibles après publication de cette ressource.
+   */
+  file: number | Media;
+  coverImage?: (number | null) | Media;
+  services?: (number | Service)[] | null;
+  sectors?: (number | Sector)[] | null;
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  /**
+   * Date éditoriale affichée publiquement; elle est définie automatiquement à la première publication si elle est laissée vide.
+   */
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CallToActionBlock".
+ */
+export interface CallToActionBlock {
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'route' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'services';
+                value: number | Service;
+              } | null)
+            | ({
+                relationTo: 'sectors';
+                value: number | Sector;
+              } | null)
+            | ({
+                relationTo: 'trainings';
+                value: number | Training;
+              } | null)
+            | ({
+                relationTo: 'publications';
+                value: number | Publication;
+              } | null)
+            | ({
+                relationTo: 'case-studies';
+                value: number | CaseStudy;
+              } | null)
+            | ({
+                relationTo: 'resources';
+                value: number | Resource;
+              } | null)
+            | ({
+                relationTo: 'team-members';
+                value: number | TeamMember;
+              } | null)
+            | ({
+                relationTo: 'references';
+                value: number | Reference;
+              } | null);
+          route?:
+            | (
+                | '/'
+                | '/a-propos'
+                | '/expertises'
+                | '/secteurs'
+                | '/formations'
+                | '/publications'
+                | '/etudes-de-cas'
+                | '/ressources'
+                | '/equipe'
+                | '/references'
+                | '/contact'
+                | '/recherche'
+              )
+            | null;
+          url?: string | null;
+          label: string;
+          /**
+           * Choisissez le style du lien.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContentBlock".
+ */
+export interface ContentBlock {
+  columns?:
+    | {
+        size?: ('oneThird' | 'half' | 'twoThirds' | 'full') | null;
+        richText?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        enableLink?: boolean | null;
+        link?: {
+          type?: ('reference' | 'route' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'services';
+                value: number | Service;
+              } | null)
+            | ({
+                relationTo: 'sectors';
+                value: number | Sector;
+              } | null)
+            | ({
+                relationTo: 'trainings';
+                value: number | Training;
+              } | null)
+            | ({
+                relationTo: 'publications';
+                value: number | Publication;
+              } | null)
+            | ({
+                relationTo: 'case-studies';
+                value: number | CaseStudy;
+              } | null)
+            | ({
+                relationTo: 'resources';
+                value: number | Resource;
+              } | null)
+            | ({
+                relationTo: 'team-members';
+                value: number | TeamMember;
+              } | null)
+            | ({
+                relationTo: 'references';
+                value: number | Reference;
+              } | null);
+          route?:
+            | (
+                | '/'
+                | '/a-propos'
+                | '/expertises'
+                | '/secteurs'
+                | '/formations'
+                | '/publications'
+                | '/etudes-de-cas'
+                | '/ressources'
+                | '/equipe'
+                | '/references'
+                | '/contact'
+                | '/recherche'
+              )
+            | null;
+          url?: string | null;
+          label: string;
+          /**
+           * Choisissez le style du lien.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'content';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: number | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ArchiveBlock".
+ */
+export interface ArchiveBlock {
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  populateBy?: ('collection' | 'selection') | null;
+  relationTo?: 'posts' | null;
+  categories?: (number | Category)[] | null;
+  limit?: number | null;
+  selectedDocs?:
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'archive';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FormBlock".
+ */
+export interface FormBlock {
+  form: number | Form;
+  enableIntro?: boolean | null;
+  introContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'formBlock';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  title: string;
+  fields?:
+    | (
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            defaultValue?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'checkbox';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'country';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'email';
+          }
+        | {
+            message?: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            } | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'message';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'number';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            placeholder?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'select';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'state';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'textarea';
+          }
+      )[]
+    | null;
+  submitButtonLabel?: string | null;
+  confirmationType?: ('message' | 'redirect') | null;
+  confirmationMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  redirect?: {
+    url: string;
+  };
+  emails?:
+    | {
+        emailTo?: string | null;
+        cc?: string | null;
+        bcc?: string | null;
+        replyTo?: string | null;
+        emailFrom?: string | null;
+        subject: string;
+        message?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-requests".
+ */
+export interface ContactRequest {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  organization?: string | null;
+  jobTitle?: string | null;
+  country?: string | null;
+  privacyConsent?: boolean | null;
+  privacyConsentAt?: string | null;
+  privacyNoticeVersion?: string | null;
+  subject: string;
+  message: string;
+  status: 'new' | 'qualified' | 'in_progress' | 'converted' | 'rejected' | 'archived';
+  /**
+   * Attribuable uniquement à un compte ADMIN ou COMMERCIAL.
+   */
+  assignedTo?: (number | null) | User;
+  internalNotes?: string | null;
+  source: 'website' | 'admin' | 'import' | 'integration';
+  submittedAt: string;
+  idempotencyKey?: string | null;
+  notificationStatus?: ('pending' | 'sent') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-requests".
+ */
+export interface ServiceRequest {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  organization: string;
+  jobTitle?: string | null;
+  country?: string | null;
+  privacyConsent?: boolean | null;
+  privacyConsentAt?: string | null;
+  privacyNoticeVersion?: string | null;
+  service: number | Service;
+  sector?: (number | null) | Sector;
+  need: string;
+  wantedPeriod?: string | null;
+  budget?: string | null;
+  status: 'new' | 'qualified' | 'in_progress' | 'converted' | 'rejected' | 'archived';
+  /**
+   * Attribuable uniquement à un compte ADMIN ou COMMERCIAL.
+   */
+  assignedTo?: (number | null) | User;
+  internalNotes?: string | null;
+  source: 'website' | 'admin' | 'import' | 'integration';
+  submittedAt: string;
+  idempotencyKey?: string | null;
+  notificationStatus?: ('pending' | 'sent') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "training-requests".
+ */
+export interface TrainingRequest {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  organization: string;
+  jobTitle?: string | null;
+  country?: string | null;
+  privacyConsent?: boolean | null;
+  privacyConsentAt?: string | null;
+  privacyNoticeVersion?: string | null;
+  /**
+   * Facultatif si le besoin est décrit librement.
+   */
+  training?: (number | null) | Training;
+  customTrainingNeed?: string | null;
+  participantCount?: number | null;
+  preferredFormat?: ('in_person' | 'remote' | 'hybrid' | 'undecided') | null;
+  wantedPeriod?: string | null;
+  location?: string | null;
+  message?: string | null;
+  status: 'new' | 'qualified' | 'in_progress' | 'converted' | 'rejected' | 'archived';
+  /**
+   * Attribuable uniquement à un compte ADMIN ou COMMERCIAL.
+   */
+  assignedTo?: (number | null) | User;
+  internalNotes?: string | null;
+  source: 'website' | 'admin' | 'import' | 'integration';
+  submittedAt: string;
+  idempotencyKey?: string | null;
+  notificationStatus?: ('pending' | 'sent') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1186,7 +1797,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'notifySubmission' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1219,10 +1830,14 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'notifySubmission' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  /**
+   * Used for concurrency control. Jobs with the same key are subject to exclusive/supersedes rules.
+   */
+  concurrencyKey?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1252,6 +1867,38 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'trainings';
         value: number | Training;
+      } | null)
+    | ({
+        relationTo: 'publications';
+        value: number | Publication;
+      } | null)
+    | ({
+        relationTo: 'case-studies';
+        value: number | CaseStudy;
+      } | null)
+    | ({
+        relationTo: 'team-members';
+        value: number | TeamMember;
+      } | null)
+    | ({
+        relationTo: 'references';
+        value: number | Reference;
+      } | null)
+    | ({
+        relationTo: 'resources';
+        value: number | Resource;
+      } | null)
+    | ({
+        relationTo: 'contact-requests';
+        value: number | ContactRequest;
+      } | null)
+    | ({
+        relationTo: 'service-requests';
+        value: number | ServiceRequest;
+      } | null)
+    | ({
+        relationTo: 'training-requests';
+        value: number | TrainingRequest;
       } | null)
     | ({
         relationTo: 'media';
@@ -1347,6 +1994,7 @@ export interface PagesSelect<T extends boolean = true> {
                     type?: T;
                     newTab?: T;
                     reference?: T;
+                    route?: T;
                     url?: T;
                     label?: T;
                     appearance?: T;
@@ -1393,6 +2041,7 @@ export interface CallToActionBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -1419,6 +2068,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
               url?: T;
               label?: T;
               appearance?: T;
@@ -1607,6 +2257,252 @@ export interface TrainingsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "publications_select".
+ */
+export interface PublicationsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  excerpt?: T;
+  type?: T;
+  coverImage?: T;
+  content?: T;
+  topics?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  authors?: T;
+  services?: T;
+  sectors?: T;
+  featured?: T;
+  order?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "case-studies_select".
+ */
+export interface CaseStudiesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  shortDescription?: T;
+  coverImage?: T;
+  clientDisclosure?: T;
+  clientReference?: T;
+  anonymousClientLabel?: T;
+  context?: T;
+  challenge?: T;
+  approach?: T;
+  results?: T;
+  metrics?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        unit?: T;
+        id?: T;
+      };
+  services?: T;
+  sectors?: T;
+  featured?: T;
+  order?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "team-members_select".
+ */
+export interface TeamMembersSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  jobTitle?: T;
+  shortBio?: T;
+  bio?: T;
+  photo?: T;
+  linkedin?: T;
+  publicEmail?: T;
+  services?: T;
+  featured?: T;
+  order?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  publications?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "references_select".
+ */
+export interface ReferencesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  logo?: T;
+  website?: T;
+  shortDescription?: T;
+  type?: T;
+  sectors?: T;
+  featured?: T;
+  order?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  caseStudies?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resources_select".
+ */
+export interface ResourcesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  type?: T;
+  shortDescription?: T;
+  file?: T;
+  coverImage?: T;
+  services?: T;
+  sectors?: T;
+  featured?: T;
+  order?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-requests_select".
+ */
+export interface ContactRequestsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  organization?: T;
+  jobTitle?: T;
+  country?: T;
+  privacyConsent?: T;
+  privacyConsentAt?: T;
+  privacyNoticeVersion?: T;
+  subject?: T;
+  message?: T;
+  status?: T;
+  assignedTo?: T;
+  internalNotes?: T;
+  source?: T;
+  submittedAt?: T;
+  idempotencyKey?: T;
+  notificationStatus?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "service-requests_select".
+ */
+export interface ServiceRequestsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  organization?: T;
+  jobTitle?: T;
+  country?: T;
+  privacyConsent?: T;
+  privacyConsentAt?: T;
+  privacyNoticeVersion?: T;
+  service?: T;
+  sector?: T;
+  need?: T;
+  wantedPeriod?: T;
+  budget?: T;
+  status?: T;
+  assignedTo?: T;
+  internalNotes?: T;
+  source?: T;
+  submittedAt?: T;
+  idempotencyKey?: T;
+  notificationStatus?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "training-requests_select".
+ */
+export interface TrainingRequestsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  phone?: T;
+  organization?: T;
+  jobTitle?: T;
+  country?: T;
+  privacyConsent?: T;
+  privacyConsentAt?: T;
+  privacyNoticeVersion?: T;
+  training?: T;
+  customTrainingNeed?: T;
+  participantCount?: T;
+  preferredFormat?: T;
+  wantedPeriod?: T;
+  location?: T;
+  message?: T;
+  status?: T;
+  assignedTo?: T;
+  internalNotes?: T;
+  source?: T;
+  submittedAt?: T;
+  idempotencyKey?: T;
+  notificationStatus?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1975,6 +2871,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  concurrencyKey?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2031,7 +2928,7 @@ export interface Header {
   navItems?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'route' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -2041,13 +2938,124 @@ export interface Header {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'services';
+                value: number | Service;
+              } | null)
+            | ({
+                relationTo: 'sectors';
+                value: number | Sector;
+              } | null)
+            | ({
+                relationTo: 'trainings';
+                value: number | Training;
+              } | null)
+            | ({
+                relationTo: 'publications';
+                value: number | Publication;
+              } | null)
+            | ({
+                relationTo: 'case-studies';
+                value: number | CaseStudy;
+              } | null)
+            | ({
+                relationTo: 'resources';
+                value: number | Resource;
+              } | null)
+            | ({
+                relationTo: 'team-members';
+                value: number | TeamMember;
+              } | null)
+            | ({
+                relationTo: 'references';
+                value: number | Reference;
               } | null);
+          route?:
+            | (
+                | '/'
+                | '/a-propos'
+                | '/expertises'
+                | '/secteurs'
+                | '/formations'
+                | '/publications'
+                | '/etudes-de-cas'
+                | '/ressources'
+                | '/equipe'
+                | '/references'
+                | '/contact'
+                | '/recherche'
+              )
+            | null;
           url?: string | null;
           label: string;
         };
         id?: string | null;
       }[]
     | null;
+  primaryCTA?: {
+    type?: ('reference' | 'route' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'services';
+          value: number | Service;
+        } | null)
+      | ({
+          relationTo: 'sectors';
+          value: number | Sector;
+        } | null)
+      | ({
+          relationTo: 'trainings';
+          value: number | Training;
+        } | null)
+      | ({
+          relationTo: 'publications';
+          value: number | Publication;
+        } | null)
+      | ({
+          relationTo: 'case-studies';
+          value: number | CaseStudy;
+        } | null)
+      | ({
+          relationTo: 'resources';
+          value: number | Resource;
+        } | null)
+      | ({
+          relationTo: 'team-members';
+          value: number | TeamMember;
+        } | null)
+      | ({
+          relationTo: 'references';
+          value: number | Reference;
+        } | null);
+    route?:
+      | (
+          | '/'
+          | '/a-propos'
+          | '/expertises'
+          | '/secteurs'
+          | '/formations'
+          | '/publications'
+          | '/etudes-de-cas'
+          | '/ressources'
+          | '/equipe'
+          | '/references'
+          | '/contact'
+          | '/recherche'
+        )
+      | null;
+    url?: string | null;
+    label?: string | null;
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2060,7 +3068,7 @@ export interface Footer {
   navItems?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'route' | 'custom') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -2070,13 +3078,505 @@ export interface Footer {
             | ({
                 relationTo: 'posts';
                 value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'services';
+                value: number | Service;
+              } | null)
+            | ({
+                relationTo: 'sectors';
+                value: number | Sector;
+              } | null)
+            | ({
+                relationTo: 'trainings';
+                value: number | Training;
+              } | null)
+            | ({
+                relationTo: 'publications';
+                value: number | Publication;
+              } | null)
+            | ({
+                relationTo: 'case-studies';
+                value: number | CaseStudy;
+              } | null)
+            | ({
+                relationTo: 'resources';
+                value: number | Resource;
+              } | null)
+            | ({
+                relationTo: 'team-members';
+                value: number | TeamMember;
+              } | null)
+            | ({
+                relationTo: 'references';
+                value: number | Reference;
               } | null);
+          route?:
+            | (
+                | '/'
+                | '/a-propos'
+                | '/expertises'
+                | '/secteurs'
+                | '/formations'
+                | '/publications'
+                | '/etudes-de-cas'
+                | '/ressources'
+                | '/equipe'
+                | '/references'
+                | '/contact'
+                | '/recherche'
+              )
+            | null;
           url?: string | null;
           label: string;
         };
         id?: string | null;
       }[]
     | null;
+  navigationColumns?:
+    | {
+        title: string;
+        links?:
+          | {
+              link: {
+                type?: ('reference' | 'route' | 'custom') | null;
+                newTab?: boolean | null;
+                reference?:
+                  | ({
+                      relationTo: 'pages';
+                      value: number | Page;
+                    } | null)
+                  | ({
+                      relationTo: 'posts';
+                      value: number | Post;
+                    } | null)
+                  | ({
+                      relationTo: 'services';
+                      value: number | Service;
+                    } | null)
+                  | ({
+                      relationTo: 'sectors';
+                      value: number | Sector;
+                    } | null)
+                  | ({
+                      relationTo: 'trainings';
+                      value: number | Training;
+                    } | null)
+                  | ({
+                      relationTo: 'publications';
+                      value: number | Publication;
+                    } | null)
+                  | ({
+                      relationTo: 'case-studies';
+                      value: number | CaseStudy;
+                    } | null)
+                  | ({
+                      relationTo: 'resources';
+                      value: number | Resource;
+                    } | null)
+                  | ({
+                      relationTo: 'team-members';
+                      value: number | TeamMember;
+                    } | null)
+                  | ({
+                      relationTo: 'references';
+                      value: number | Reference;
+                    } | null);
+                route?:
+                  | (
+                      | '/'
+                      | '/a-propos'
+                      | '/expertises'
+                      | '/secteurs'
+                      | '/formations'
+                      | '/publications'
+                      | '/etudes-de-cas'
+                      | '/ressources'
+                      | '/equipe'
+                      | '/references'
+                      | '/contact'
+                      | '/recherche'
+                    )
+                  | null;
+                url?: string | null;
+                label: string;
+              };
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  legalLinks?:
+    | {
+        link: {
+          type?: ('reference' | 'route' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: number | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: number | Post;
+              } | null)
+            | ({
+                relationTo: 'services';
+                value: number | Service;
+              } | null)
+            | ({
+                relationTo: 'sectors';
+                value: number | Sector;
+              } | null)
+            | ({
+                relationTo: 'trainings';
+                value: number | Training;
+              } | null)
+            | ({
+                relationTo: 'publications';
+                value: number | Publication;
+              } | null)
+            | ({
+                relationTo: 'case-studies';
+                value: number | CaseStudy;
+              } | null)
+            | ({
+                relationTo: 'resources';
+                value: number | Resource;
+              } | null)
+            | ({
+                relationTo: 'team-members';
+                value: number | TeamMember;
+              } | null)
+            | ({
+                relationTo: 'references';
+                value: number | Reference;
+              } | null);
+          route?:
+            | (
+                | '/'
+                | '/a-propos'
+                | '/expertises'
+                | '/secteurs'
+                | '/formations'
+                | '/publications'
+                | '/etudes-de-cas'
+                | '/ressources'
+                | '/equipe'
+                | '/references'
+                | '/contact'
+                | '/recherche'
+              )
+            | null;
+          url?: string | null;
+          label: string;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  showContactInformation?: boolean | null;
+  showSocialNetworks?: boolean | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteName?: string | null;
+  legalName?: string | null;
+  shortName?: string | null;
+  logo?: (number | null) | Media;
+  /**
+   * À renseigner uniquement si une variante est nécessaire.
+   */
+  logoDark?: (number | null) | Media;
+  favicon?: (number | null) | Media;
+  defaultSocialImage?: (number | null) | Media;
+  copyrightName?: string | null;
+  defaultMetaTitle?: string | null;
+  titleSuffix?: string | null;
+  defaultMetaDescription?: string | null;
+  socialNetworks?:
+    | {
+        platform: 'linkedin' | 'facebook' | 'x' | 'youtube' | 'instagram';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-information".
+ */
+export interface ContactInformation {
+  id: number;
+  /**
+   * Cette adresse est destinée à être affichée publiquement.
+   */
+  generalEmail?: string | null;
+  primaryPhone?: string | null;
+  secondaryPhone?: string | null;
+  streetAddress?: string | null;
+  addressComplement?: string | null;
+  poBox?: string | null;
+  postalCode?: string | null;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+  mapUrl?: string | null;
+  hours?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-settings".
+ */
+export interface HomeSetting {
+  id: number;
+  hero?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    description?: string | null;
+    image?: (number | null) | Media;
+    primaryCTA?: {
+      type?: ('reference' | 'route' | 'custom') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'services';
+            value: number | Service;
+          } | null)
+        | ({
+            relationTo: 'sectors';
+            value: number | Sector;
+          } | null)
+        | ({
+            relationTo: 'trainings';
+            value: number | Training;
+          } | null)
+        | ({
+            relationTo: 'publications';
+            value: number | Publication;
+          } | null)
+        | ({
+            relationTo: 'case-studies';
+            value: number | CaseStudy;
+          } | null)
+        | ({
+            relationTo: 'resources';
+            value: number | Resource;
+          } | null)
+        | ({
+            relationTo: 'team-members';
+            value: number | TeamMember;
+          } | null)
+        | ({
+            relationTo: 'references';
+            value: number | Reference;
+          } | null);
+      route?:
+        | (
+            | '/'
+            | '/a-propos'
+            | '/expertises'
+            | '/secteurs'
+            | '/formations'
+            | '/publications'
+            | '/etudes-de-cas'
+            | '/ressources'
+            | '/equipe'
+            | '/references'
+            | '/contact'
+            | '/recherche'
+          )
+        | null;
+      url?: string | null;
+      label?: string | null;
+    };
+    secondaryCTA?: {
+      type?: ('reference' | 'route' | 'custom') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'services';
+            value: number | Service;
+          } | null)
+        | ({
+            relationTo: 'sectors';
+            value: number | Sector;
+          } | null)
+        | ({
+            relationTo: 'trainings';
+            value: number | Training;
+          } | null)
+        | ({
+            relationTo: 'publications';
+            value: number | Publication;
+          } | null)
+        | ({
+            relationTo: 'case-studies';
+            value: number | CaseStudy;
+          } | null)
+        | ({
+            relationTo: 'resources';
+            value: number | Resource;
+          } | null)
+        | ({
+            relationTo: 'team-members';
+            value: number | TeamMember;
+          } | null)
+        | ({
+            relationTo: 'references';
+            value: number | Reference;
+          } | null);
+      route?:
+        | (
+            | '/'
+            | '/a-propos'
+            | '/expertises'
+            | '/secteurs'
+            | '/formations'
+            | '/publications'
+            | '/etudes-de-cas'
+            | '/ressources'
+            | '/equipe'
+            | '/references'
+            | '/contact'
+            | '/recherche'
+          )
+        | null;
+      url?: string | null;
+      label?: string | null;
+    };
+  };
+  introduction?: string | null;
+  /**
+   * La sélection et l'ordre de ces éléments déterminent leur affichage sur l'accueil.
+   */
+  featuredServices?: (number | Service)[] | null;
+  /**
+   * La sélection et l'ordre de ces éléments déterminent leur affichage sur l'accueil.
+   */
+  featuredSectors?: (number | Sector)[] | null;
+  /**
+   * La sélection et l'ordre de ces éléments déterminent leur affichage sur l'accueil.
+   */
+  featuredTrainings?: (number | Training)[] | null;
+  /**
+   * La sélection et l'ordre de ces éléments déterminent leur affichage sur l'accueil.
+   */
+  featuredCaseStudies?: (number | CaseStudy)[] | null;
+  /**
+   * La sélection et l'ordre de ces éléments déterminent leur affichage sur l'accueil.
+   */
+  featuredPublications?: (number | Publication)[] | null;
+  /**
+   * La sélection et l'ordre de ces éléments déterminent leur affichage sur l'accueil.
+   */
+  featuredResources?: (number | Resource)[] | null;
+  /**
+   * La sélection et l'ordre de ces éléments déterminent leur affichage sur l'accueil.
+   */
+  featuredReferences?: (number | Reference)[] | null;
+  keyFigures?:
+    | {
+        prefix?: string | null;
+        value: string;
+        suffix?: string | null;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  finalCTA?: {
+    title?: string | null;
+    description?: string | null;
+    cta?: {
+      type?: ('reference' | 'route' | 'custom') | null;
+      newTab?: boolean | null;
+      reference?:
+        | ({
+            relationTo: 'pages';
+            value: number | Page;
+          } | null)
+        | ({
+            relationTo: 'posts';
+            value: number | Post;
+          } | null)
+        | ({
+            relationTo: 'services';
+            value: number | Service;
+          } | null)
+        | ({
+            relationTo: 'sectors';
+            value: number | Sector;
+          } | null)
+        | ({
+            relationTo: 'trainings';
+            value: number | Training;
+          } | null)
+        | ({
+            relationTo: 'publications';
+            value: number | Publication;
+          } | null)
+        | ({
+            relationTo: 'case-studies';
+            value: number | CaseStudy;
+          } | null)
+        | ({
+            relationTo: 'resources';
+            value: number | Resource;
+          } | null)
+        | ({
+            relationTo: 'team-members';
+            value: number | TeamMember;
+          } | null)
+        | ({
+            relationTo: 'references';
+            value: number | Reference;
+          } | null);
+      route?:
+        | (
+            | '/'
+            | '/a-propos'
+            | '/expertises'
+            | '/secteurs'
+            | '/formations'
+            | '/publications'
+            | '/etudes-de-cas'
+            | '/ressources'
+            | '/equipe'
+            | '/references'
+            | '/contact'
+            | '/recherche'
+          )
+        | null;
+      url?: string | null;
+      label?: string | null;
+    };
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2094,10 +3594,21 @@ export interface HeaderSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
               url?: T;
               label?: T;
             };
         id?: T;
+      };
+  primaryCTA?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        route?: T;
+        url?: T;
+        label?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -2117,10 +3628,167 @@ export interface FooterSelect<T extends boolean = true> {
               type?: T;
               newTab?: T;
               reference?: T;
+              route?: T;
               url?: T;
               label?: T;
             };
         id?: T;
+      };
+  navigationColumns?:
+    | T
+    | {
+        title?: T;
+        links?:
+          | T
+          | {
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    route?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
+  legalLinks?:
+    | T
+    | {
+        link?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              route?: T;
+              url?: T;
+              label?: T;
+            };
+        id?: T;
+      };
+  showContactInformation?: T;
+  showSocialNetworks?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  legalName?: T;
+  shortName?: T;
+  logo?: T;
+  logoDark?: T;
+  favicon?: T;
+  defaultSocialImage?: T;
+  copyrightName?: T;
+  defaultMetaTitle?: T;
+  titleSuffix?: T;
+  defaultMetaDescription?: T;
+  socialNetworks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "contact-information_select".
+ */
+export interface ContactInformationSelect<T extends boolean = true> {
+  generalEmail?: T;
+  primaryPhone?: T;
+  secondaryPhone?: T;
+  streetAddress?: T;
+  addressComplement?: T;
+  poBox?: T;
+  postalCode?: T;
+  city?: T;
+  region?: T;
+  country?: T;
+  mapUrl?: T;
+  hours?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-settings_select".
+ */
+export interface HomeSettingsSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        description?: T;
+        image?: T;
+        primaryCTA?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              route?: T;
+              url?: T;
+              label?: T;
+            };
+        secondaryCTA?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              route?: T;
+              url?: T;
+              label?: T;
+            };
+      };
+  introduction?: T;
+  featuredServices?: T;
+  featuredSectors?: T;
+  featuredTrainings?: T;
+  featuredCaseStudies?: T;
+  featuredPublications?: T;
+  featuredResources?: T;
+  featuredReferences?: T;
+  keyFigures?:
+    | T
+    | {
+        prefix?: T;
+        value?: T;
+        suffix?: T;
+        label?: T;
+        id?: T;
+      };
+  finalCTA?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        cta?:
+          | T
+          | {
+              type?: T;
+              newTab?: T;
+              reference?: T;
+              route?: T;
+              url?: T;
+              label?: T;
+            };
       };
   updatedAt?: T;
   createdAt?: T;
@@ -2135,6 +3803,19 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskNotifySubmission".
+ */
+export interface TaskNotifySubmission {
+  input: {
+    requestCollection: 'contact-requests' | 'service-requests' | 'training-requests';
+    requestID: number;
+  };
+  output: {
+    sent: boolean;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2164,6 +3845,26 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'trainings';
           value: number | Training;
+        } | null)
+      | ({
+          relationTo: 'publications';
+          value: number | Publication;
+        } | null)
+      | ({
+          relationTo: 'case-studies';
+          value: number | CaseStudy;
+        } | null)
+      | ({
+          relationTo: 'team-members';
+          value: number | TeamMember;
+        } | null)
+      | ({
+          relationTo: 'references';
+          value: number | Reference;
+        } | null)
+      | ({
+          relationTo: 'resources';
+          value: number | Resource;
         } | null);
     global?: string | null;
     user?: {

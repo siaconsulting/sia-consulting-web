@@ -11,11 +11,15 @@ export const editorialAccess: CollectionConfig['access'] = {
   update: adminOrEditor,
 }
 
-export const editorialAdmin = (): CollectionConfig['admin'] => ({
-  defaultColumns: ['title', 'slug', 'featured', 'order', 'updatedAt'],
-  group: 'Catalogue éditorial',
+export const editorialAdmin = (options: {
+  group?: string
+  defaultColumns?: string[]
+  titleField?: string
+} = {}): CollectionConfig['admin'] => ({
+  defaultColumns: options.defaultColumns ?? ['title', 'slug', 'featured', 'order', 'updatedAt'],
+  group: options.group ?? 'Catalogue éditorial',
   hidden: ({ user }) => !canManageEditorial(user),
-  useAsTitle: 'title',
+  useAsTitle: options.titleField ?? 'title',
 })
 
 export const editorialLabels = (singular: string, plural: string) => ({

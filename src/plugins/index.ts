@@ -20,14 +20,19 @@ type SEOContent = {
   slug?: string | null
   shortDescription?: string | null
   summary?: string | null
+  excerpt?: string | null
+  shortBio?: string | null
+  name?: string | null
+  jobTitle?: string | null
 }
 
 const generateTitle: GenerateTitle<SEOContent> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | SIA Consulting` : 'SIA Consulting'
+  const title = doc?.title || doc?.name
+  return title ? `${title} | SIA Consulting` : 'SIA Consulting'
 }
 
 const generateDescription: GenerateDescription<SEOContent> = ({ doc }) =>
-  doc?.shortDescription || doc?.summary || ''
+  doc?.shortDescription || doc?.summary || doc?.excerpt || doc?.shortBio || ''
 
 const publicPathByCollection: Record<string, string> = {
   pages: '',
@@ -35,6 +40,11 @@ const publicPathByCollection: Record<string, string> = {
   services: '/expertises',
   sectors: '/secteurs',
   trainings: '/formations',
+  publications: '/publications',
+  'case-studies': '/etudes-de-cas',
+  'team-members': '/equipe',
+  references: '/references',
+  resources: '/ressources',
 }
 
 const generateURL: GenerateURL<SEOContent> = ({ collectionConfig, doc }) => {
@@ -77,7 +87,7 @@ export const plugins: Plugin[] = [
     generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.slug}`, ''),
   }),
   seoPlugin({
-    collections: ['services', 'sectors', 'trainings'],
+    collections: ['services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'references', 'resources'],
     uploadsCollection: 'media',
     tabbedUI: true,
     generateTitle,

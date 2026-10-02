@@ -7,6 +7,7 @@ import { adminOrEditor } from '@/access/adminOrEditor'
 
 export const Header: GlobalConfig = {
   slug: 'header',
+  label: 'En-tête',
   access: {
     read: anyone,
     update: adminOrEditor,
@@ -20,7 +21,7 @@ export const Header: GlobalConfig = {
           appearances: false,
         }),
       ],
-      maxRows: 6,
+      maxRows: 10,
       admin: {
         initCollapsed: true,
         components: {
@@ -28,6 +29,7 @@ export const Header: GlobalConfig = {
         },
       },
     },
+    link({ name: 'primaryCTA', appearances: false, required: false }),
   ],
   hooks: {
     afterChange: [revalidateHeader],

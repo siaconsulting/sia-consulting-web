@@ -15,5 +15,7 @@ export const hasRole = (user: unknown, roles: readonly UserRole[]): boolean => {
 export const isAdmin = (user: unknown): boolean => hasRole(user, [ROLE.admin])
 export const canManageEditorial = (user: unknown): boolean =>
   hasRole(user, [ROLE.admin, ROLE.editor])
+export const canManageRequests = (user: unknown): boolean =>
+  hasRole(user, [ROLE.admin, ROLE.commercial])
 export const hasKnownRole = (user: unknown): boolean =>
   hasRole(user, [ROLE.admin, ROLE.editor, ROLE.commercial])

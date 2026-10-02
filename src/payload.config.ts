@@ -12,12 +12,24 @@ import { Users } from './collections/Users'
 import { Services } from './collections/Services'
 import { Sectors } from './collections/Sectors'
 import { Trainings } from './collections/Trainings'
+import { Publications } from './collections/Publications'
+import { CaseStudies } from './collections/CaseStudies'
+import { TeamMembers } from './collections/TeamMembers'
+import { References } from './collections/References'
+import { Resources } from './collections/Resources'
+import { ContactRequests } from './collections/ContactRequests'
+import { ServiceRequests } from './collections/ServiceRequests'
+import { TrainingRequests } from './collections/TrainingRequests'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { SiteSettings } from './globals/SiteSettings'
+import { ContactInformation } from './globals/ContactInformation'
+import { HomeSettings } from './globals/HomeSettings'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { isAdmin } from './access/roles'
+import { notifySubmissionTask } from './jobs/notifySubmission'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -66,9 +78,9 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
   }),
-  collections: [Pages, Posts, Services, Sectors, Trainings, Media, Categories, Users],
+  collections: [Pages, Posts, Services, Sectors, Trainings, Publications, CaseStudies, TeamMembers, References, Resources, ContactRequests, ServiceRequests, TrainingRequests, Media, Categories, Users],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, SiteSettings, ContactInformation, HomeSettings],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
@@ -76,6 +88,7 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   jobs: {
+    enableConcurrencyControl: true,
     access: {
       run: ({ req }: { req: PayloadRequest }): boolean => {
         // Allow logged in users to execute this endpoint (default)
@@ -91,6 +104,6 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [],
+    tasks: [notifySubmissionTask],
   },
 })
