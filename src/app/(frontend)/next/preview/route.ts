@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { NextRequest } from 'next/server'
 
 import configPromise from '@payload-config'
+import { hasRole, ROLE } from '@/access/roles'
 
 export type PreviewSearchParams = {
   path: string
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest): Promise<Response> {
 
   const draft = await draftMode()
 
-  if (!user) {
+  if (!hasRole(user, [ROLE.admin, ROLE.editor])) {
     draft.disable()
     return new Response('You are not allowed to preview this page', { status: 403 })
   }

@@ -9,7 +9,9 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
+import { adminOnly } from '../access/adminOnly'
+import { adminOrEditor } from '../access/adminOrEditor'
+import { canManageEditorial } from '../access/roles'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -18,10 +20,13 @@ export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: adminOrEditor,
+    delete: adminOnly,
     read: anyone,
-    update: authenticated,
+    update: adminOrEditor,
+  },
+  admin: {
+    hidden: ({ user }) => !canManageEditorial(user),
   },
   fields: [
     {

@@ -1,15 +1,15 @@
 'use client'
-import type { RefObject } from 'react'
+import type { RefCallback } from 'react'
 
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef } from 'react'
 
 type UseClickableCardType<T extends HTMLElement> = {
   card: {
-    ref: RefObject<T | null>
+    ref: RefCallback<T>
   }
   link: {
-    ref: RefObject<HTMLAnchorElement | null>
+    ref: RefCallback<HTMLAnchorElement>
   }
 }
 
@@ -30,6 +30,12 @@ function useClickableCard<T extends HTMLElement>({
   const timeDown = useRef<number>(0)
   const hasActiveParent = useRef<boolean>(false)
   const pressedButton = useRef<number>(0)
+  const setCardRef = useCallback((node: T | null) => {
+    card.current = node
+  }, [])
+  const setLinkRef = useCallback((node: HTMLAnchorElement | null) => {
+    link.current = node
+  }, [])
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
@@ -97,10 +103,10 @@ function useClickableCard<T extends HTMLElement>({
 
   return {
     card: {
-      ref: card,
+      ref: setCardRef,
     },
     link: {
-      ref: link,
+      ref: setLinkRef,
     },
   }
 }

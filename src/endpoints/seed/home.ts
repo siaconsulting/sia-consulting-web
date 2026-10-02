@@ -47,7 +47,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                   format: 0,
                   mode: 'normal',
                   style: '',
-                  text: 'Payload Website Template',
+                  text: 'SIA Consulting',
                   version: 1,
                 },
               ],
@@ -109,7 +109,7 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
                   fields: {
                     linkType: 'custom',
                     newTab: true,
-                    url: 'https://github.com/payloadcms/payload/tree/3.x/templates/website',
+                    url: '/admin',
                   },
                   format: '',
                   indent: 0,
@@ -666,9 +666,9 @@ export const home: (args: HomeArgs) => RequiredDataFromCollectionSlug<'pages'> =
       },
     ],
     meta: {
-      description: 'An open-source website built with Payload and Next.js.',
+      description: 'Site institutionnel de SIA Consulting.',
       image: heroImage.id,
-      title: 'Payload Website Template',
+      title: 'SIA Consulting',
     },
     title: 'Home',
   }

@@ -2,11 +2,14 @@ import type { GlobalConfig } from 'payload'
 
 import { link } from '@/fields/link'
 import { revalidateHeader } from './hooks/revalidateHeader'
+import { anyone } from '@/access/anyone'
+import { adminOrEditor } from '@/access/adminOrEditor'
 
 export const Header: GlobalConfig = {
   slug: 'header',
   access: {
-    read: () => true,
+    read: anyone,
+    update: adminOrEditor,
   },
   fields: [
     {

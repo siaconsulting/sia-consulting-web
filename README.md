@@ -1,6 +1,6 @@
-# Payload Website Template
+# SIA Consulting
 
-This is the official [Payload Website Template](https://github.com/payloadcms/payload/blob/3.x/templates/website). Use it to power websites, blogs, or portfolios from small to enterprise. This repo includes a fully-working backend, enterprise-grade admin panel, and a beautifully designed, production-ready website.
+Socle technique du site institutionnel de SIA Consulting, construit avec Next.js, TypeScript et Payload CMS.
 
 This template is right for you if you are working on:
 

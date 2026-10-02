@@ -12,9 +12,12 @@ import { beforeSyncWithSearch } from '@/search/beforeSync'
 
 import { Page, Post } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
+import { adminOnly } from '@/access/adminOnly'
+import { adminOrEditor } from '@/access/adminOrEditor'
+import { canManageEditorial, isAdmin } from '@/access/roles'
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | Payload Website Template` : 'Payload Website Template'
+  return doc?.title ? `${doc.title} | SIA Consulting` : 'SIA Consulting'
 }
 
 const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
@@ -44,6 +47,8 @@ export const plugins: Plugin[] = [
       hooks: {
         afterChange: [revalidateRedirects],
       },
+      access: { create: adminOrEditor, delete: adminOnly, update: adminOrEditor },
+      admin: { hidden: ({ user }) => !canManageEditorial(user) },
     },
   }),
   nestedDocsPlugin({
@@ -59,6 +64,12 @@ export const plugins: Plugin[] = [
       payment: false,
     },
     formOverrides: {
+      access: {
+        create: adminOrEditor,
+        delete: adminOnly,
+        update: adminOrEditor,
+      },
+      admin: { hidden: ({ user }) => !canManageEditorial(user) },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
           if ('name' in field && field.name === 'confirmationMessage') {
@@ -79,11 +90,16 @@ export const plugins: Plugin[] = [
         })
       },
     },
+    formSubmissionOverrides: {
+      access: { read: adminOnly, update: () => false, delete: adminOnly },
+      admin: { hidden: ({ user }) => !isAdmin(user) },
+    },
   }),
   searchPlugin({
     collections: ['posts'],
     beforeSync: beforeSyncWithSearch,
     searchOverrides: {
+      admin: { hidden: ({ user }) => !canManageEditorial(user) },
       fields: ({ defaultFields }) => {
         return [...defaultFields, ...searchFields]
       },

@@ -14,16 +14,12 @@ export const Logo = (props: Props) => {
   const priority = priorityFromProps || 'low'
 
   return (
-    /* eslint-disable @next/next/no-img-element */
-    <img
-      alt="Payload Logo"
-      width={193}
-      height={34}
-      loading={loading}
-      fetchPriority={priority}
-      decoding="async"
-      className={clsx('max-w-[9.375rem] w-full h-[34px]', className)}
-      src="https://raw.githubusercontent.com/payloadcms/payload/3.x/packages/ui/src/assets/payload-logo-light.svg"
-    />
+    <span
+      aria-label="SIA Consulting"
+      className={clsx('max-w-[9.375rem] w-full h-[34px] inline-flex items-center', className)}
+      title={`SIA Consulting (${loading}, ${priority})`}
+    >
+      SIA Consulting
+    </span>
   )
 }
