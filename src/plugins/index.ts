@@ -5,25 +5,46 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import { searchPlugin } from '@payloadcms/plugin-search'
 import { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
-import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
+import { GenerateDescription, GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { searchFields } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
 
-import { Page, Post } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { adminOnly } from '@/access/adminOnly'
 import { adminOrEditor } from '@/access/adminOrEditor'
 import { canManageEditorial, isAdmin } from '@/access/roles'
 
-const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
+type SEOContent = {
+  title?: string | null
+  slug?: string | null
+  shortDescription?: string | null
+  summary?: string | null
+}
+
+const generateTitle: GenerateTitle<SEOContent> = ({ doc }) => {
   return doc?.title ? `${doc.title} | SIA Consulting` : 'SIA Consulting'
 }
 
-const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
-  const url = getServerSideURL()
+const generateDescription: GenerateDescription<SEOContent> = ({ doc }) =>
+  doc?.shortDescription || doc?.summary || ''
 
-  return doc?.slug ? `${url}/${doc.slug}` : url
+const publicPathByCollection: Record<string, string> = {
+  pages: '',
+  posts: '/posts',
+  services: '/expertises',
+  sectors: '/secteurs',
+  trainings: '/formations',
+}
+
+const generateURL: GenerateURL<SEOContent> = ({ collectionConfig, doc }) => {
+  const url = getServerSideURL()
+  const prefix = collectionConfig ? publicPathByCollection[collectionConfig.slug] : undefined
+
+  if (!doc?.slug || prefix === undefined) return url
+  if (collectionConfig?.slug === 'pages' && doc.slug === 'home') return url
+
+  return `${url}${prefix}/${doc.slug}`
 }
 
 export const plugins: Plugin[] = [
@@ -56,7 +77,11 @@ export const plugins: Plugin[] = [
     generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.slug}`, ''),
   }),
   seoPlugin({
+    collections: ['services', 'sectors', 'trainings'],
+    uploadsCollection: 'media',
+    tabbedUI: true,
     generateTitle,
+    generateDescription,
     generateURL,
   }),
   formBuilderPlugin({

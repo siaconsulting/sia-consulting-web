@@ -146,9 +146,20 @@ If you are migrating an existing site or moving content to a new URL, you can us
 
 ## Jobs and Scheduled Publish
 
-We have configured [Scheduled Publish](https://payloadcms.com/docs/versions/drafts#scheduled-publish) which uses the [jobs queue](https://payloadcms.com/docs/jobs-queue/jobs) in order to publish or unpublish your content on a scheduled time. The tasks are run on a cron schedule and can also be run as a separate instance if needed.
+Payload ajoute automatiquement sa tâche `schedulePublish` aux collections qui activent `schedulePublish`. L’événement est conservé dans `payload-jobs` (queue `default`, avec `waitUntil`) et doit être exécuté par un runner ; le processus web ne lance pas les jobs automatiquement.
 
-> Note: When deployed on Vercel, depending on the plan tier, you may be limited to daily cron only.
+En local, configurez `DATABASE_URL`, `PAYLOAD_SECRET`, `NEXT_PUBLIC_SERVER_URL` et un `REVALIDATION_SECRET` privé dans `.env`, puis lancez deux terminaux :
+
+```text
+Terminal 1: pnpm dev
+Terminal 2: pnpm jobs:run
+```
+
+Le runner officiel Payload traite la queue par défaut chaque minute. Pour traiter une seule fois les jobs déjà dus, utilisez `pnpm jobs:run:once`. Le runner est un processus séparé ; il utilise le mécanisme Payload natif et n’expose pas d’endpoint public d’exécution.
+
+Si le serveur web utilise un autre port, adaptez `NEXT_PUBLIC_SERVER_URL` dans `.env` à cette même adresse.
+
+En production VPS, prévoyez trois services : le processus web Next.js/Payload, un processus jobs Payload supervisé séparément et PostgreSQL. Le runner devra être maintenu en fonctionnement par un superviseur (par exemple systemd, Docker Compose ou un process manager), choix à faire lors du déploiement. Les hooks de publication demandent la revalidation au processus web par une route interne protégée par `REVALIDATION_SECRET`.
 
 ## Website
 

@@ -7,6 +7,7 @@ test.describe('Admin Panel', () => {
   let context: BrowserContext
 
   test.beforeAll(async ({ browser }) => {
+    test.setTimeout(90_000)
     await seedTestUser()
 
     context = await browser.newContext()

@@ -69,6 +69,9 @@ export interface Config {
   collections: {
     pages: Page;
     posts: Post;
+    services: Service;
+    sectors: Sector;
+    trainings: Training;
     media: Media;
     categories: Category;
     users: User;
@@ -84,6 +87,10 @@ export interface Config {
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
+    sectors: {
+      services: 'services';
+      trainings: 'trainings';
+    };
     'payload-folders': {
       documentsAndFolders: 'payload-folders' | 'media';
     };
@@ -91,6 +98,9 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    services: ServicesSelect<false> | ServicesSelect<true>;
+    sectors: SectorsSelect<false> | SectorsSelect<true>;
+    trainings: TrainingsSelect<false> | TrainingsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -776,6 +786,265 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services".
+ */
+export interface Service {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Résumé pour les listes et les cartes (280 caractères maximum).
+   */
+  shortDescription: string;
+  /**
+   * Image facultative utilisée pour illustrer la fiche.
+   */
+  heroImage?: (number | null) | Media;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  keyBenefits?:
+    | {
+        benefit: string;
+        id?: string | null;
+      }[]
+    | null;
+  deliverables?:
+    | {
+        deliverable: string;
+        id?: string | null;
+      }[]
+    | null;
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  /**
+   * Secteurs auxquels cette expertise est rattachée.
+   */
+  sectors?: (number | Sector)[] | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sectors".
+ */
+export interface Sector {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Résumé pour les listes et les cartes (280 caractères maximum).
+   */
+  shortDescription: string;
+  /**
+   * Image facultative utilisée pour illustrer la fiche.
+   */
+  heroImage?: (number | null) | Media;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  body: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  /**
+   * Ces liens sont gérés depuis chaque expertise.
+   */
+  services?: {
+    docs?: (number | Service)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Ces liens sont gérés depuis chaque formation.
+   */
+  trainings?: {
+    docs?: (number | Training)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trainings".
+ */
+export interface Training {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Référence catalogue facultative, distincte de l’identifiant Payload.
+   */
+  code?: string | null;
+  /**
+   * Résumé pour les listes et les cartes (280 caractères maximum).
+   */
+  summary: string;
+  /**
+   * Image facultative utilisée pour illustrer la fiche.
+   */
+  heroImage?: (number | null) | Media;
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  objectives?:
+    | {
+        objective: string;
+        id?: string | null;
+      }[]
+    | null;
+  targetAudience?:
+    | {
+        audience: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Laisser vide si aucun prérequis ne s’applique.
+   */
+  prerequisites?: string | null;
+  program?:
+    | {
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Ex. « 2 jours », « 14 heures » ou une durée à convenir.
+   */
+  duration?: string | null;
+  format?: ('in_person' | 'remote' | 'hybrid') | null;
+  /**
+   * Facultatif; le lieu peut dépendre de la session.
+   */
+  location?: string | null;
+  featured?: boolean | null;
+  /**
+   * Les fiches avec le plus petit nombre apparaissent en premier.
+   */
+  order?: number | null;
+  services?: (number | Service)[] | null;
+  /**
+   * Association éditoriale directe, indépendante du secteur des expertises liées.
+   */
+  sectors?: (number | Sector)[] | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -971,6 +1240,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'services';
+        value: number | Service;
+      } | null)
+    | ({
+        relationTo: 'sectors';
+        value: number | Sector;
+      } | null)
+    | ({
+        relationTo: 'trainings';
+        value: number | Training;
       } | null)
     | ({
         relationTo: 'media';
@@ -1208,6 +1489,121 @@ export interface PostsSelect<T extends boolean = true> {
       };
   generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "services_select".
+ */
+export interface ServicesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  shortDescription?: T;
+  heroImage?: T;
+  introduction?: T;
+  body?: T;
+  keyBenefits?:
+    | T
+    | {
+        benefit?: T;
+        id?: T;
+      };
+  deliverables?:
+    | T
+    | {
+        deliverable?: T;
+        id?: T;
+      };
+  featured?: T;
+  order?: T;
+  sectors?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sectors_select".
+ */
+export interface SectorsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  shortDescription?: T;
+  heroImage?: T;
+  introduction?: T;
+  body?: T;
+  featured?: T;
+  order?: T;
+  services?: T;
+  trainings?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "trainings_select".
+ */
+export interface TrainingsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  code?: T;
+  summary?: T;
+  heroImage?: T;
+  description?: T;
+  objectives?:
+    | T
+    | {
+        objective?: T;
+        id?: T;
+      };
+  targetAudience?:
+    | T
+    | {
+        audience?: T;
+        id?: T;
+      };
+  prerequisites?: T;
+  program?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  duration?: T;
+  format?: T;
+  location?: T;
+  featured?: T;
+  order?: T;
+  services?: T;
+  sectors?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -1756,6 +2152,18 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'services';
+          value: number | Service;
+        } | null)
+      | ({
+          relationTo: 'sectors';
+          value: number | Sector;
+        } | null)
+      | ({
+          relationTo: 'trainings';
+          value: number | Training;
         } | null);
     global?: string | null;
     user?: {
