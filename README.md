@@ -203,32 +203,32 @@ To spin up this example locally, follow the [Quick Start](#quick-start). Then [S
 
 ### Working with Postgres
 
-Postgres and other SQL-based databases follow a strict schema for managing your data. In comparison to our MongoDB adapter, this means that there's a few extra steps to working with Postgres.
+Postgres requires an explicit, versioned schema workflow outside the local development sandbox.
 
 Note that often times when making big schema changes you can run the risk of losing data if you're not manually migrating it.
 
 #### Local development
 
-Ideally we recommend running a local copy of your database so that schema updates are as fast as possible. By default the Postgres adapter has `push: true` for development environments. This will let you add, modify and remove fields and collections without needing to run any data migrations.
+The Postgres adapter is configured with `push: true` outside production for local development and tests. Treat such databases as sandboxes; do not apply production migrations to a database already managed by push.
 
-If your database is pointed to production you will want to set `push: false` otherwise you will risk losing data or having your migrations out of sync.
+In production, `push` is explicitly disabled. The application does not migrate automatically at startup or during build.
 
 #### Migrations
 
 [Migrations](https://payloadcms.com/docs/database/migrations) are essentially SQL code versions that keeps track of your schema. When deploy with Postgres you will need to make sure you create and then run your migrations.
 
-Locally create a migration
+Create a migration after finalizing a schema change
 
 ```bash
-pnpm payload migrate:create
+pnpm db:migrate:create <name>
 ```
 
 This creates the migration files you will need to push alongside with your new configuration.
 
-On the server after building and before running `pnpm start` you will want to run your migrations
+On the target environment, run migrations explicitly before build/start
 
 ```bash
-pnpm payload migrate
+pnpm db:migrate
 ```
 
 This command will check for any migrations that have not yet been run and try to run them and it will keep a record of migrations that have been run in the database.
@@ -259,9 +259,10 @@ The seed script will also create a demo user for demonstration purposes only:
 
 To run Payload in production, you need to build and start the Admin panel. To do so, follow these steps:
 
-1. Invoke the `next build` script by running `pnpm build` or `npm run build` in your project root. This creates a `.next` directory with a production-ready admin bundle.
-1. Finally run `pnpm start` or `npm run start` to run Node in production and serve Payload from the `.build` directory.
-1. When you're ready to go live, see Deployment below for more details.
+1. Apply pending database migrations explicitly with `pnpm db:migrate` against the target database.
+2. Build the application with `pnpm build`.
+3. Start the application with `pnpm start`.
+4. When you're ready to go live, see Deployment below for more details.
 
 ### Deploying to Vercel
 
@@ -318,6 +319,22 @@ Before deploying your app, you need to:
 2. You can then deploy Payload as you would any other Node.js or Next.js application either directly on a VPS, DigitalOcean's Apps Platform, via Coolify or more. More guides coming soon.
 
 You can also deploy your app manually, check out the [deployment documentation](https://payloadcms.com/docs/production/deployment) for full details.
+
+## Soumissions entrantes
+
+Les futures Server Actions devront appeler les services serveur `submitContactRequest`, `submitServiceRequest` ou `submitTrainingRequest`, en séparant les champs publics d’un contexte construit côté serveur. Ce contexte exige une adresse client validée par l’infrastructure. Ne faites pas confiance directement à `x-forwarded-for` : configurez et validez d’abord le reverse proxy et sa liste de proxies de confiance. Aucun endpoint REST public dédié n’est créé. Les formulaires V1 n’acceptent pas de pièces jointes.
+
+Le rate limiting partagé utilise PostgreSQL et une table technique créée par migration (`pnpm db:migrate`). L’UPSERT atomique partage le compteur entre processus. `SUBMISSION_RATE_LIMIT_SECRET` doit être un secret long et aléatoire distinct en production ; à défaut, la clé HMAC utilise `PAYLOAD_SECRET`. Les compteurs expirés sont nettoyés lors des nouvelles fenêtres.
+
+En local, les soumissions sont enregistrées même sans SMTP ; aucun email contenant les données d’un prospect n’est écrit dans la console. Pour activer SMTP, configurez côté serveur `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_FROM_ADDRESS`, `SMTP_FROM_NAME`, et éventuellement `SMTP_USER` + `SMTP_PASS`, ainsi que `SUBMISSION_NOTIFICATION_TO`. Tous ces paramètres sont server-only. Les jobs transportent seulement le nom de collection et l’identifiant de la demande. La livraison SMTP est au mieux at-least-once : un crash après acceptation SMTP mais avant l’enregistrement `sent` peut entraîner un doublon. `SUBMISSION_PRIVACY_CONSENT_REQUIRED` et `SUBMISSION_PRIVACY_NOTICE_VERSION` contrôlent techniquement le consentement ; le wording, les obligations et la rétention restent à valider juridiquement.
+
+## Schéma PostgreSQL et migrations
+
+Le mode développement Payload/Drizzle (`push`) est réservé à une base locale de sandbox. Ne lancez pas de migrations versionnées sur une base déjà synchronisée de cette manière. Pour vérifier l’historique, utilisez une base PostgreSQL isolée et vide.
+
+Après une modification du schéma : mettez à jour la config Payload, régénérez les types, exécutez les tests, puis créez une migration avec `pnpm db:migrate:create <nom>`. Inspectez le `up` et le `down`, vérifiez la migration depuis zéro sur une base jetable et exécutez `pnpm db:migrate:status`.
+
+En production, appliquez explicitement `pnpm db:migrate` sur la base cible avant de démarrer la nouvelle version. Les migrations ne sont pas lancées automatiquement au démarrage de l’application ni par le build. Ensuite, construisez avec `pnpm build` et démarrez avec `pnpm start`.
 
 ## Questions
 

@@ -59,35 +59,48 @@ export const sendSubmissionNotification = async (
   payload: Payload,
   collection: SubmissionCollection,
   requestID: number,
+  delivery: { recipient?: string; sendEmail?: (message: SendEmailOptions) => Promise<unknown> } = {},
 ): Promise<boolean> => {
   const request = await loadSubmission(payload, collection, requestID)
   if (request.notificationStatus === 'sent') return false
 
-  const recipient = process.env.SUBMISSION_NOTIFICATION_TO?.trim()
-  if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
-    throw new Error('SUBMISSION_NOTIFICATION_TO is not configured with a valid address.')
-  }
-  if (payload.email.name === 'console') {
-    throw new Error('A production Payload email adapter is not configured.')
-  }
+  try {
+    const recipient = delivery.recipient ?? process.env.SUBMISSION_NOTIFICATION_TO?.trim()
+    if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
+      throw new Error('Invalid notification destination.')
+    }
+    if (!delivery.sendEmail && payload.email.name === 'console') {
+      throw new Error('A production Payload email adapter is not configured.')
+    }
 
-  let trainingTitle: string | undefined
-  if (collection === 'training-requests' && 'training' in request && request.training) {
-    const trainingID = typeof request.training === 'object' ? request.training.id : request.training
-    const training = await payload.findByID({ collection: 'trainings', id: trainingID, depth: 0, overrideAccess: true })
-    trainingTitle = training.title
+    let trainingTitle: string | undefined
+    if (collection === 'training-requests' && 'training' in request && request.training) {
+      const trainingID = typeof request.training === 'object' ? request.training.id : request.training
+      const training = await payload.findByID({ collection: 'trainings', id: trainingID, depth: 0, overrideAccess: true })
+      trainingTitle = training.title
+    }
+
+    const message = buildSubmissionEmail(collection, { ...request, trainingTitle })
+    if (delivery.sendEmail) await delivery.sendEmail({ ...message, to: recipient })
+    else await payload.sendEmail({ ...message, to: recipient })
+
+    await payload.update({
+      collection,
+      id: requestID,
+      data: { notificationStatus: 'sent' } as never,
+      overrideAccess: true,
+    })
+    return true
+  } catch {
+    await payload.update({
+      collection,
+      id: requestID,
+      data: { notificationStatus: 'failed' } as never,
+      overrideAccess: true,
+    }).catch(() => undefined)
+    // Do not propagate transport/provider details, which may contain private configuration.
+    throw new Error('Submission notification delivery failed.')
   }
-
-  const message = buildSubmissionEmail(collection, { ...request, trainingTitle })
-  await payload.sendEmail({ ...message, to: recipient })
-
-  await payload.update({
-    collection,
-    id: requestID,
-    data: { notificationStatus: 'sent' } as never,
-    overrideAccess: true,
-  })
-  return true
 }
 
 type NotificationTaskShape = {

@@ -65,7 +65,7 @@ export type CommonSubmission = {
 
 export const parseCommonSubmission = (
   value: unknown,
-  now: Date,
+  _now: Date,
   options: { organizationRequired?: boolean } = {},
 ): ValidationResult<CommonSubmission> => {
   if (!isRecord(value)) return { success: false }
@@ -84,9 +84,6 @@ export const parseCommonSubmission = (
 
   const consent = value.privacyConsent
   if (consent !== undefined && typeof consent !== 'boolean') return { success: false }
-  const notice = readText(value, 'privacyNoticeVersion', { maxLength: 100 })
-  if (!notice.success || (notice.data && consent !== true)) return { success: false }
-
   return {
     success: true,
     data: {
@@ -97,8 +94,6 @@ export const parseCommonSubmission = (
       ...(parsed.data.jobTitle ? { jobTitle: parsed.data.jobTitle } : {}),
       ...(parsed.data.country ? { country: parsed.data.country } : {}),
       ...(consent !== undefined ? { privacyConsent: consent } : {}),
-      ...(consent === true ? { privacyConsentAt: now.toISOString() } : {}),
-      ...(notice.data ? { privacyNoticeVersion: notice.data } : {}),
     },
   }
 }

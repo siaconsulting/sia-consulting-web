@@ -11,6 +11,9 @@
     "dev:prod": "pnpm build && pnpm start",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "db:migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "db:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
+    "db:migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
     "jobs:run": "cross-env NODE_OPTIONS=--no-deprecation payload jobs:run --cron \"* * * * *\"",
     "jobs:run:once": "cross-env NODE_OPTIONS=--no-deprecation payload jobs:run",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
@@ -24,6 +27,7 @@
   "dependencies": {
     "@payloadcms/admin-bar": "3.90.2",
     "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/email-nodemailer": "3.90.2",
     "@payloadcms/live-preview-react": "3.90.2",
     "@payloadcms/next": "3.90.2",
     "@payloadcms/plugin-form-builder": "3.90.2",

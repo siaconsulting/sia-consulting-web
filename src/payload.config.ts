@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -34,6 +35,44 @@ import { notifySubmissionTask } from './jobs/notifySubmission'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
+const getSMTPConfiguration = () => {
+  const host = process.env.SMTP_HOST?.trim()
+  const portText = process.env.SMTP_PORT?.trim()
+  const username = process.env.SMTP_USER?.trim()
+  const password = process.env.SMTP_PASS
+  const fromAddress = process.env.SMTP_FROM_ADDRESS?.trim()
+  const fromName = process.env.SMTP_FROM_NAME?.trim()
+  const present = [host, portText, username, password, fromAddress, fromName].some(Boolean)
+  if (!present) return undefined
+  if (!host || !portText || !fromAddress || !fromName || Boolean(username) !== Boolean(password)) {
+    throw new Error('SMTP configuration is incomplete. Configure host, port, sender and both-or-neither credentials.')
+  }
+  const port = Number(portText)
+  if (!Number.isSafeInteger(port) || port < 1 || port > 65535 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fromAddress)) {
+    throw new Error('SMTP port or sender address is invalid.')
+  }
+  const secureValue = process.env.SMTP_SECURE?.trim().toLowerCase()
+  if (secureValue && secureValue !== 'true' && secureValue !== 'false') {
+    throw new Error('SMTP_SECURE must be true or false.')
+  }
+  return {
+    host,
+    port,
+    secure: secureValue ? secureValue === 'true' : port === 465,
+    ...(username && password ? { auth: { user: username, pass: password } } : {}),
+  }
+}
+
+const smtpTransportOptions = getSMTPConfiguration()
+const email = smtpTransportOptions
+  ? await nodemailerAdapter({
+    defaultFromAddress: process.env.SMTP_FROM_ADDRESS!.trim(),
+    defaultFromName: process.env.SMTP_FROM_NAME!.trim(),
+    transportOptions: smtpTransportOptions,
+    skipVerify: true,
+  })
+  : undefined
 
 export default buildConfig({
   admin: {
@@ -74,10 +113,13 @@ export default buildConfig({
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
+  ...(email ? { email } : {}),
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    migrationDir: path.resolve(dirname, 'migrations'),
+    push: process.env.NODE_ENV !== 'production',
   }),
   collections: [Pages, Posts, Services, Sectors, Trainings, Publications, CaseStudies, TeamMembers, References, Resources, ContactRequests, ServiceRequests, TrainingRequests, Media, Categories, Users],
   cors: [getServerSideURL()].filter(Boolean),

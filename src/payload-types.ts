@@ -1564,7 +1564,7 @@ export interface ContactRequest {
   source: 'website' | 'admin' | 'import' | 'integration';
   submittedAt: string;
   idempotencyKey?: string | null;
-  notificationStatus?: ('pending' | 'sent') | null;
+  notificationStatus?: ('pending' | 'failed' | 'sent') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1597,7 +1597,7 @@ export interface ServiceRequest {
   source: 'website' | 'admin' | 'import' | 'integration';
   submittedAt: string;
   idempotencyKey?: string | null;
-  notificationStatus?: ('pending' | 'sent') | null;
+  notificationStatus?: ('pending' | 'failed' | 'sent') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1635,7 +1635,7 @@ export interface TrainingRequest {
   source: 'website' | 'admin' | 'import' | 'integration';
   submittedAt: string;
   idempotencyKey?: string | null;
-  notificationStatus?: ('pending' | 'sent') | null;
+  notificationStatus?: ('pending' | 'failed' | 'sent') | null;
   updatedAt: string;
   createdAt: string;
 }

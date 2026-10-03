@@ -1,4 +1,8 @@
+import 'server-only'
+
 import type { Payload } from 'payload'
+import { createPostgresSubmissionRateLimiter, getSubmissionRateLimitPolicy } from './postgresRateLimiter'
+import { hashSubmissionIdempotencyKey, isSubmissionRequestContext, type SubmissionRequestContext } from './requestContext'
 import { verifySubmissionFormToken, isHoneypotFilled } from './protection'
 import {
   isRecord,
@@ -9,166 +13,200 @@ import {
 } from './validation'
 
 export type SubmissionFailure = 'invalid' | 'rate_limited' | 'temporarily_unavailable'
-export type SubmissionResult = { success: true } | { success: false; reason: SubmissionFailure }
+export type SubmissionResult =
+  | { success: true; duplicate: boolean }
+  | { success: false; reason: SubmissionFailure }
 
 export interface SharedRequestRateLimiter {
   consume(input: { key: string; scope: SubmissionKind; limit: number; windowSeconds: number }): Promise<boolean>
 }
 
-export type SubmissionEnvelope = {
+export type PublicSubmissionInput = {
   fields: unknown
   antiSpam: unknown
   idempotencyKey: unknown
-  trustedClientKey: unknown
 }
 
 type SubmissionServiceDependencies = {
   payload: Payload
   rateLimiter: SharedRequestRateLimiter
-  now?: () => Date
   tokenSecret?: string
+  privacyNoticeVersion?: string
+  consentRequired?: boolean
 }
 
 const isValidIdempotencyKey = (value: unknown): value is string =>
   typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
 
-const isValidTrustedClientKey = (value: unknown): value is string =>
-  typeof value === 'string' && value.length >= 8 && value.length <= 256 && !/[\r\n]/.test(value)
+const getConsentConfiguration = (dependencies: SubmissionServiceDependencies) => ({
+  version: dependencies.privacyNoticeVersion ?? process.env.SUBMISSION_PRIVACY_NOTICE_VERSION?.trim(),
+  required: dependencies.consentRequired ?? process.env.SUBMISSION_PRIVACY_CONSENT_REQUIRED === 'true',
+})
 
 const submissionGuard = async (
   dependencies: SubmissionServiceDependencies,
   kind: SubmissionKind,
-  envelope: SubmissionEnvelope,
-  now: Date,
+  input: PublicSubmissionInput,
+  context: SubmissionRequestContext,
 ): Promise<SubmissionResult | null> => {
-  if (!isRecord(envelope.antiSpam)) return { success: false, reason: 'invalid' }
-  if (isHoneypotFilled(envelope.antiSpam.website)) return { success: true }
-  if (!verifySubmissionFormToken(envelope.antiSpam.token, kind, now.getTime(), dependencies.tokenSecret)) {
+  if (!isSubmissionRequestContext(context) || !isRecord(input.antiSpam)) return { success: false, reason: 'invalid' }
+  if (isHoneypotFilled(input.antiSpam.website)) return { success: true, duplicate: false }
+  if (!verifySubmissionFormToken(input.antiSpam.token, kind, context.receivedAt.getTime(), dependencies.tokenSecret)) {
     return { success: false, reason: 'invalid' }
   }
-  if (!isValidIdempotencyKey(envelope.idempotencyKey) || !isValidTrustedClientKey(envelope.trustedClientKey)) {
-    return { success: false, reason: 'invalid' }
-  }
+  if (!isValidIdempotencyKey(input.idempotencyKey)) return { success: false, reason: 'invalid' }
 
   try {
-    const allowed = await dependencies.rateLimiter.consume({
-      key: envelope.trustedClientKey,
-      scope: kind,
-      limit: 5,
-      windowSeconds: 15 * 60,
-    })
+    const policy = getSubmissionRateLimitPolicy(kind)
+    const allowed = await dependencies.rateLimiter.consume({ key: context.trustedClientKey, scope: kind, ...policy })
     return allowed ? null : { success: false, reason: 'rate_limited' }
   } catch {
-    // Fail closed: a missing shared limiter must not silently disable production protection.
     return { success: false, reason: 'temporarily_unavailable' }
   }
 }
 
-const existingIdempotentRequest = async (
-  payload: Payload,
-  collection: 'contact-requests' | 'service-requests' | 'training-requests',
-  idempotencyKey: string,
-) => {
-  const result = await payload.find({
-    collection,
-    where: { idempotencyKey: { equals: idempotencyKey } },
-    limit: 1,
-    depth: 0,
-    overrideAccess: true,
-  })
-  return result.docs[0]
-}
-
-const publishedDocumentExists = async (
-  payload: Payload,
-  collection: 'services' | 'sectors' | 'trainings',
-  id: number,
-) => {
-  try {
-    await payload.findByID({ collection, id, depth: 0, overrideAccess: false })
-    return true
-  } catch {
-    return false
-  }
-}
+const requestCollection = {
+  contact: 'contact-requests',
+  service: 'service-requests',
+  training: 'training-requests',
+} as const
 
 export const createSubmissionService = (dependencies: SubmissionServiceDependencies) => {
-  const now = dependencies.now ?? (() => new Date())
-
-  const checkRelations = async (
-    collection: 'services' | 'sectors' | 'trainings',
-    ids: (number | undefined)[],
-  ) => {
+  const checkRelations = async (collection: 'services' | 'sectors' | 'trainings', ids: (number | undefined)[]) => {
     for (const id of ids) {
-      if (id !== undefined && !(await publishedDocumentExists(dependencies.payload, collection, id))) return false
+      if (id === undefined) continue
+      try {
+        await dependencies.payload.findByID({ collection, id, depth: 0, overrideAccess: false })
+      } catch {
+        return false
+      }
     }
     return true
   }
 
-  return {
-    submitContactRequest: async (envelope: SubmissionEnvelope): Promise<SubmissionResult> => {
-      const nowValue = now()
-      const guard = await submissionGuard(dependencies, 'contact', envelope, nowValue)
-      if (guard) return guard
-      const parsed = parseContactSubmission(envelope.fields, nowValue)
-      if (!parsed.success) return { success: false, reason: 'invalid' }
-      // The guard was run above so shared anti-spam checks are not repeated by createRequest.
-      return createRequestAfterGuard(envelope, 'contact-requests', parsed.data, nowValue)
-    },
-
-    submitServiceRequest: async (envelope: SubmissionEnvelope): Promise<SubmissionResult> => {
-      const nowValue = now()
-      const guard = await submissionGuard(dependencies, 'service', envelope, nowValue)
-      if (guard) return guard
-      const parsed = parseServiceSubmission(envelope.fields, nowValue)
-      if (!parsed.success || !(await checkRelations('services', [parsed.success ? parsed.data.service : undefined])) ||
-        !(await checkRelations('sectors', [parsed.success ? parsed.data.sector : undefined]))) {
-        return { success: false, reason: 'invalid' }
-      }
-      return createRequestAfterGuard(envelope, 'service-requests', parsed.data, nowValue)
-    },
-
-    submitTrainingRequest: async (envelope: SubmissionEnvelope): Promise<SubmissionResult> => {
-      const nowValue = now()
-      const guard = await submissionGuard(dependencies, 'training', envelope, nowValue)
-      if (guard) return guard
-      const parsed = parseTrainingSubmission(envelope.fields, nowValue)
-      if (!parsed.success || !(await checkRelations('trainings', [parsed.success ? parsed.data.training : undefined]))) {
-        return { success: false, reason: 'invalid' }
-      }
-      return createRequestAfterGuard(envelope, 'training-requests', parsed.data, nowValue)
-    },
+  const applyServerConsent = <T extends Record<string, unknown>>(data: T, input: unknown, receivedAt: Date) => {
+    const config = getConsentConfiguration(dependencies)
+    if (config.required && (!config.version || !isRecord(input) || input.privacyConsent !== true)) return null
+    if (!isRecord(input) || input.privacyConsent === undefined) return config.required ? null : data
+    if (typeof input.privacyConsent !== 'boolean') return null
+    if (input.privacyConsent && !config.version) return null
+    return {
+      ...data,
+      privacyConsent: input.privacyConsent,
+      ...(input.privacyConsent ? {
+        privacyConsentAt: receivedAt.toISOString(),
+        privacyNoticeVersion: config.version,
+      } : {}),
+    }
   }
 
-  async function createRequestAfterGuard(
-    envelope: SubmissionEnvelope,
-    collection: 'contact-requests' | 'service-requests' | 'training-requests',
-    data: Record<string, unknown>,
-    timestamp: Date,
-  ): Promise<SubmissionResult> {
-    const idempotencyKey = envelope.idempotencyKey as string
-    const existing = await existingIdempotentRequest(dependencies.payload, collection, idempotencyKey)
-    if (existing) return { success: true }
+  const submit = async (
+    kind: SubmissionKind,
+    input: PublicSubmissionInput,
+    context: SubmissionRequestContext,
+    parse: (fields: unknown, now: Date) => { success: true; data: Record<string, unknown> } | { success: false },
+    relations?: () => Promise<boolean>,
+  ): Promise<SubmissionResult> => {
+    const receivedAt = context?.receivedAt instanceof Date ? context.receivedAt : new Date()
+    const guard = await submissionGuard(dependencies, kind, input, context)
+    if (guard) return guard
 
+    const parsed = parse(input.fields, receivedAt)
+    if (!parsed.success || (relations && !(await relations()))) return { success: false, reason: 'invalid' }
+    const data = applyServerConsent(parsed.data, input.fields, receivedAt)
+    if (!data) {
+      const consentConfig = getConsentConfiguration(dependencies)
+      return !consentConfig.version && (consentConfig.required ||
+        (isRecord(input.fields) && input.fields.privacyConsent === true))
+        ? { success: false, reason: 'temporarily_unavailable' }
+        : { success: false, reason: 'invalid' }
+    }
+    if (!isValidIdempotencyKey(input.idempotencyKey)) return { success: false, reason: 'invalid' }
+
+    const collection = requestCollection[kind]
+    let idempotencyKey: string | undefined
     try {
+      idempotencyKey = hashSubmissionIdempotencyKey(input.idempotencyKey)
+      const existing = await dependencies.payload.find({
+        collection,
+        where: { idempotencyKey: { equals: idempotencyKey } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      })
+      if (existing.docs[0]) return { success: true, duplicate: true }
+
       await dependencies.payload.create({
         collection,
         data: {
           ...data,
           status: 'new',
           source: 'website',
-          submittedAt: timestamp.toISOString(),
+          submittedAt: receivedAt.toISOString(),
           notificationStatus: 'pending',
           idempotencyKey,
         } as never,
         overrideAccess: true,
-        context: { submissionSource: 'website' },
+        context: { submissionSource: 'website', submissionRequestID: context.requestID },
       })
-      return { success: true }
-    } catch (error) {
-      const duplicate = await existingIdempotentRequest(dependencies.payload, collection, idempotencyKey).catch(() => undefined)
-      if (duplicate) return { success: true }
-      throw error
+      return { success: true, duplicate: false }
+    } catch {
+      if (!idempotencyKey) return { success: false, reason: 'temporarily_unavailable' }
+      const duplicate = await dependencies.payload.find({
+        collection,
+        where: { idempotencyKey: { equals: idempotencyKey } },
+        limit: 1,
+        depth: 0,
+        overrideAccess: true,
+      }).catch(() => undefined)
+      if (duplicate?.docs[0]) return { success: true, duplicate: true }
+      return { success: false, reason: 'temporarily_unavailable' }
     }
   }
+
+  return {
+    submitContactRequest: (input: PublicSubmissionInput, context: SubmissionRequestContext) =>
+      submit('contact', input, context, parseContactSubmission),
+    submitServiceRequest: (input: PublicSubmissionInput, context: SubmissionRequestContext) =>
+      submit('service', input, context, parseServiceSubmission, async () => {
+        const parsed = parseServiceSubmission(input.fields, context.receivedAt)
+        return parsed.success && await checkRelations('services', [parsed.data.service]) &&
+          await checkRelations('sectors', [parsed.data.sector])
+      }),
+    submitTrainingRequest: (input: PublicSubmissionInput, context: SubmissionRequestContext) =>
+      submit('training', input, context, parseTrainingSubmission, async () => {
+        const parsed = parseTrainingSubmission(input.fields, context.receivedAt)
+        return parsed.success && await checkRelations('trainings', [parsed.data.training])
+      }),
+  }
 }
+
+type SubmissionService = ReturnType<typeof createSubmissionService>
+let defaultSubmissionService: Promise<SubmissionService> | undefined
+
+const getDefaultSubmissionService = (): Promise<SubmissionService> => {
+  if (!defaultSubmissionService) {
+    defaultSubmissionService = (async () => {
+      const [{ getPayload }, configModule] = await Promise.all([
+        import('payload'),
+        import('../../payload.config'),
+      ])
+      const payload = await getPayload({ config: await configModule.default })
+      return createSubmissionService({ payload, rateLimiter: createPostgresSubmissionRateLimiter(payload) })
+    })().catch((error: unknown) => {
+      defaultSubmissionService = undefined
+      throw error
+    })
+  }
+  return defaultSubmissionService
+}
+
+/** Ready for a Next.js Server Action; pass only public fields and a server-built context. */
+export const submitContactRequest = async (input: PublicSubmissionInput, context: SubmissionRequestContext) =>
+  (await getDefaultSubmissionService()).submitContactRequest(input, context)
+
+export const submitServiceRequest = async (input: PublicSubmissionInput, context: SubmissionRequestContext) =>
+  (await getDefaultSubmissionService()).submitServiceRequest(input, context)
+
+export const submitTrainingRequest = async (input: PublicSubmissionInput, context: SubmissionRequestContext) =>
+  (await getDefaultSubmissionService()).submitTrainingRequest(input, context)

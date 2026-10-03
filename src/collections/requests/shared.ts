@@ -66,7 +66,11 @@ export const workflowFields = (): Field[] => [
   },
   {
     name: 'notificationStatus', type: 'select', label: 'Notification interne', defaultValue: 'pending',
-    options: [{ label: 'En attente', value: 'pending' }, { label: 'Envoyée', value: 'sent' }],
+    options: [
+      { label: 'En attente', value: 'pending' },
+      { label: 'Échec — nouvel essai prévu', value: 'failed' },
+      { label: 'Envoyée', value: 'sent' },
+    ],
     admin: { readOnly: true }, access: { read: requestAdminRead, update: neverUpdate },
   },
 ]
