@@ -4,12 +4,18 @@ import config from '@/payload.config'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { resolveLinkHref, validateExternalURL } from '@/utilities/links'
 import { getGlobalRevalidationTargets } from '@/utilities/globalRevalidation'
+import { getCollectionDetailPath, getCollectionListingPath } from '@/utilities/publicRoutes'
+import { canRunDemoSeed } from '@/utilities/seedAccess'
+import { getPreviewDocumentPath } from '@/utilities/generatePreviewPath'
+import { redirectCollections } from '@/plugins'
+import { SIA_SEARCH_COLLECTIONS } from '@/search/fieldOverrides'
 
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`
 const globalFields = {
   'site-settings': { field: 'siteName', fallback: null },
   'contact-information': { field: 'generalEmail', fallback: null },
   'home-settings': { field: 'introduction', fallback: null },
+  'about-settings': { field: 'metaTitle', fallback: null },
   header: { field: 'navItems', fallback: [] },
   footer: { field: 'navigationColumns', fallback: [] },
 } as const
@@ -62,7 +68,7 @@ describe('Globals SIA', () => {
   it('allows public reads and ADMIN/EDITOR updates, while denying COMMERCIAL and anonymous writes', async () => {
     for (const slug of Object.keys(globalFields) as GlobalName[]) {
       await expect(payload.findGlobal({ slug, overrideAccess: false })).resolves.toBeDefined()
-      const value = slug === 'site-settings' ? `Test ${suffix}` : slug === 'contact-information' ? `public-${suffix}@example.test` : slug === 'home-settings' ? `Test introduction ${suffix}` : []
+      const value = slug === 'site-settings' ? `Test ${suffix}` : slug === 'contact-information' ? `public-${suffix}@example.test` : slug === 'home-settings' ? `Test introduction ${suffix}` : slug === 'about-settings' ? `About ${suffix}` : []
       await expect(updateGlobal(slug, value, users.editor)).resolves.toBeDefined()
       await expect(updateGlobal(slug, value, users.admin)).resolves.toBeDefined()
       await expect(updateGlobal(slug, value, users.commercial)).rejects.toThrow()
@@ -86,6 +92,23 @@ describe('Globals SIA', () => {
       context: { disableRevalidate: true },
     })).rejects.toThrow()
     expect(getGlobalRevalidationTargets('home-settings')).toEqual({ paths: [{ path: '/', type: 'page' }], tags: ['global_home-settings', 'homepage'] })
+    expect(getGlobalRevalidationTargets('about-settings')).toEqual({ paths: [{ path: '/a-propos', type: 'page' }], tags: ['global_about-settings', 'about'] })
+    expect(getCollectionListingPath('services')).toBe('/expertises')
+    expect(getCollectionDetailPath('services', 'actuariat')).toBe('/expertises/actuariat')
+    expect(getCollectionDetailPath('case-studies', 'cas-sia')).toBe('/etudes-de-cas/cas-sia')
+    expect(getCollectionDetailPath('team-members', 'membre')).toBe('/equipe/membre')
+    expect(getCollectionDetailPath('resources', 'rapport')).toBe('/ressources/rapport')
+    expect(getCollectionDetailPath('references', 'organisation')).toBeNull()
+    expect(getPreviewDocumentPath('services', 'actuariat')).toBe('/expertises/actuariat')
+    expect(getPreviewDocumentPath('references', 'organisation')).toBeNull()
+    expect(redirectCollections).toEqual(expect.arrayContaining(['services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'resources']))
+    expect(redirectCollections).not.toContain('references')
+    expect(SIA_SEARCH_COLLECTIONS).toEqual(['services', 'sectors', 'trainings', 'publications', 'case-studies', 'resources'])
+    expect(canRunDemoSeed({ role: 'admin' }, 'development')).toBe(true)
+    expect(canRunDemoSeed({ role: 'editor' }, 'development')).toBe(false)
+    expect(canRunDemoSeed({ role: 'commercial' }, 'development')).toBe(false)
+    expect(canRunDemoSeed(null, 'development')).toBe(false)
+    expect(canRunDemoSeed({ role: 'admin' }, 'production')).toBe(false)
   })
 
   it('stores a valid homepage relationship and relays targeted revalidation from the worker context', async () => {

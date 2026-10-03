@@ -1,61 +1,34 @@
-import { BeforeSync, DocToSync } from '@payloadcms/plugin-search/types'
+import type { BeforeSync, DocToSync } from '@payloadcms/plugin-search/types'
+import { getCollectionDetailPath, type PublicCollection } from '@/utilities/publicRoutes'
 
-export const beforeSyncWithSearch: BeforeSync = async ({ req, originalDoc, searchDoc }) => {
-  const {
-    doc: { relationTo: collection },
-  } = searchDoc
+export type SearchableCollection = Extract<
+  PublicCollection,
+  'services' | 'sectors' | 'trainings' | 'publications' | 'case-studies' | 'resources'
+>
 
-  const { slug, id, categories, title, meta } = originalDoc
+export const buildSearchResultFields = (collection: SearchableCollection, doc: Record<string, unknown>) => {
+  const slug = typeof doc.slug === 'string' ? doc.slug : ''
+  const url = getCollectionDetailPath(collection, slug)
+  if (!url) throw new Error(`No detail route configured for searchable collection: ${collection}`)
 
-  const modifiedDoc: DocToSync = {
-    ...searchDoc,
+  const possibleImage = doc.coverImage ?? doc.heroImage
+  const image = typeof possibleImage === 'object' && possibleImage !== null && 'id' in possibleImage
+    ? possibleImage.id
+    : possibleImage
+  const excerpt = doc.shortDescription ?? doc.summary ?? doc.excerpt ?? ''
+
+  return {
+    contentType: collection,
     slug,
-    meta: {
-      ...meta,
-      title: meta?.title || title,
-      image: meta?.image?.id || meta?.image,
-      description: meta?.description,
-    },
-    categories: [],
+    url,
+    excerpt: typeof excerpt === 'string' ? excerpt : '',
+    ...(image !== undefined && image !== null ? { image } : {}),
+    ...(typeof doc.publishedAt === 'string' ? { publishedAt: doc.publishedAt } : {}),
   }
-
-  if (categories && Array.isArray(categories) && categories.length > 0) {
-    const populatedCategories: { id: string | number; title: string }[] = []
-    for (const category of categories) {
-      if (!category) {
-        continue
-      }
-
-      if (typeof category === 'object') {
-        populatedCategories.push(category)
-        continue
-      }
-
-      const doc = await req.payload.findByID({
-        collection: 'categories',
-        id: category,
-        disableErrors: true,
-        depth: 0,
-        select: { title: true },
-        req,
-        overrideAccess: false,
-      })
-
-      if (doc !== null) {
-        populatedCategories.push(doc)
-      } else {
-        console.error(
-          `Failed. Category not found when syncing collection '${collection}' with id: '${id}' to search.`,
-        )
-      }
-    }
-
-    modifiedDoc.categories = populatedCategories.map((each) => ({
-      relationTo: 'categories',
-      categoryID: String(each.id),
-      title: each.title,
-    }))
-  }
-
-  return modifiedDoc
 }
+
+export const beforeSyncWithSearch: BeforeSync = async ({ collectionSlug, originalDoc, searchDoc }) => ({
+  ...searchDoc,
+  title: typeof originalDoc.title === 'string' ? originalDoc.title : '',
+  ...buildSearchResultFields(collectionSlug as SearchableCollection, originalDoc),
+}) as DocToSync

@@ -2,11 +2,12 @@ import { createLocalReq, getPayload } from 'payload'
 import { seed } from '@/endpoints/seed'
 import config from '@payload-config'
 import { headers } from 'next/headers'
+import { canRunDemoSeed } from '@/utilities/seedAccess'
 
 export const maxDuration = 60 // This function can run for a maximum of 60 seconds
 
 export async function POST(): Promise<Response> {
-  if (process.env.NODE_ENV === 'production') {
+  if (!canRunDemoSeed(null, process.env.NODE_ENV)) {
     return new Response('Demo seed is disabled in production.', { status: 404 })
   }
 
@@ -16,7 +17,7 @@ export async function POST(): Promise<Response> {
   // Authenticate by passing request headers
   const { user } = await payload.auth({ headers: requestHeaders })
 
-  if (!user) {
+  if (!user || !canRunDemoSeed(user, process.env.NODE_ENV)) {
     return new Response('Action forbidden.', { status: 403 })
   }
 

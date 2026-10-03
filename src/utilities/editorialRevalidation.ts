@@ -1,15 +1,6 @@
-export const editorialPublicPaths = {
-  services: '/expertises',
-  sectors: '/secteurs',
-  trainings: '/formations',
-  publications: '/publications',
-  'case-studies': '/etudes-de-cas',
-  'team-members': '/equipe',
-  references: '/references',
-  resources: '/ressources',
-} as const
+import { getCollectionDetailPath, getCollectionListingPath, type PublicCollection } from '@/utilities/publicRoutes'
 
-export type EditorialCollection = keyof typeof editorialPublicPaths
+export type EditorialCollection = PublicCollection
 
 export type EditorialRevalidationTargets = {
   paths: { path: string; type?: 'page' }[]
@@ -21,12 +12,13 @@ export const getEditorialRevalidationTargets = (
   slugs: (string | null | undefined)[],
 ): EditorialRevalidationTargets => {
   const paths: EditorialRevalidationTargets['paths'] = [
-    { path: editorialPublicPaths[collection], type: 'page' },
+    { path: getCollectionListingPath(collection), type: 'page' },
   ]
   const tags = [`${collection}_list`]
 
   for (const slug of new Set(slugs.filter((value): value is string => Boolean(value)))) {
-    paths.push({ path: `${editorialPublicPaths[collection]}/${encodeURIComponent(slug)}` })
+    const detailPath = getCollectionDetailPath(collection, slug)
+    if (detailPath) paths.push({ path: detailPath })
     tags.push(`${collection}_${slug}`)
   }
 

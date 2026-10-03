@@ -25,6 +25,7 @@ import { Header } from './Header/config'
 import { SiteSettings } from './globals/SiteSettings'
 import { ContactInformation } from './globals/ContactInformation'
 import { HomeSettings } from './globals/HomeSettings'
+import { AboutSettings } from './globals/AboutSettings'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -80,7 +81,7 @@ export default buildConfig({
   }),
   collections: [Pages, Posts, Services, Sectors, Trainings, Publications, CaseStudies, TeamMembers, References, Resources, ContactRequests, ServiceRequests, TrainingRequests, Media, Categories, Users],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, SiteSettings, ContactInformation, HomeSettings],
+  globals: [Header, Footer, SiteSettings, ContactInformation, HomeSettings, AboutSettings],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

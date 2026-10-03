@@ -82,7 +82,7 @@ export const link: LinkType = ({ appearances, disableLabel = false, name = 'link
         condition: (_, siblingData) => siblingData?.type === 'reference',
       },
       label: 'Contenu à lier',
-      relationTo: ['pages', 'posts', 'services', 'sectors', 'trainings', 'publications', 'case-studies', 'resources', 'team-members', 'references'],
+      relationTo: ['pages', 'posts', 'services', 'sectors', 'trainings', 'publications', 'case-studies', 'resources', 'team-members'],
       required,
     },
     {

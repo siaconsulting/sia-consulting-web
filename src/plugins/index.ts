@@ -7,8 +7,9 @@ import { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import { GenerateDescription, GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
-import { searchFields } from '@/search/fieldOverrides'
+import { SIA_SEARCH_COLLECTIONS, withLegacySearchRelations } from '@/search/fieldOverrides'
 import { beforeSyncWithSearch } from '@/search/beforeSync'
+import { getCollectionDetailPath, type PublicCollection } from '@/utilities/publicRoutes'
 
 import { getServerSideURL } from '@/utilities/getURL'
 import { adminOnly } from '@/access/adminOnly'
@@ -34,32 +35,22 @@ const generateTitle: GenerateTitle<SEOContent> = ({ doc }) => {
 const generateDescription: GenerateDescription<SEOContent> = ({ doc }) =>
   doc?.shortDescription || doc?.summary || doc?.excerpt || doc?.shortBio || ''
 
-const publicPathByCollection: Record<string, string> = {
-  pages: '',
-  posts: '/posts',
-  services: '/expertises',
-  sectors: '/secteurs',
-  trainings: '/formations',
-  publications: '/publications',
-  'case-studies': '/etudes-de-cas',
-  'team-members': '/equipe',
-  references: '/references',
-  resources: '/ressources',
-}
-
 const generateURL: GenerateURL<SEOContent> = ({ collectionConfig, doc }) => {
   const url = getServerSideURL()
-  const prefix = collectionConfig ? publicPathByCollection[collectionConfig.slug] : undefined
-
-  if (!doc?.slug || prefix === undefined) return url
-  if (collectionConfig?.slug === 'pages' && doc.slug === 'home') return url
-
-  return `${url}${prefix}/${doc.slug}`
+  if (!collectionConfig || !doc?.slug) return url
+  if (collectionConfig.slug === 'pages') return `${url}${doc.slug === 'home' ? '' : `/${doc.slug}`}`
+  if (collectionConfig.slug === 'posts') return `${url}/posts/${doc.slug}`
+  const detailPath = getCollectionDetailPath(collectionConfig.slug as PublicCollection, doc.slug)
+  return detailPath ? `${url}${detailPath}` : url
 }
+
+export const redirectCollections = [
+  'pages', 'posts', 'services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'resources',
+]
 
 export const plugins: Plugin[] = [
   redirectsPlugin({
-    collections: ['pages', 'posts'],
+    collections: redirectCollections,
     overrides: {
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
@@ -87,7 +78,7 @@ export const plugins: Plugin[] = [
     generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.slug}`, ''),
   }),
   seoPlugin({
-    collections: ['services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'references', 'resources'],
+    collections: ['services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'resources'],
     uploadsCollection: 'media',
     tabbedUI: true,
     generateTitle,
@@ -131,13 +122,15 @@ export const plugins: Plugin[] = [
     },
   }),
   searchPlugin({
-    collections: ['posts'],
+    collections: [...SIA_SEARCH_COLLECTIONS],
     beforeSync: beforeSyncWithSearch,
+    deleteDrafts: true,
+    syncDrafts: false,
     searchOverrides: {
+      labels: { singular: 'Résultat de recherche', plural: 'Résultats de recherche' },
+      access: { create: adminOnly, read: () => true, update: adminOnly, delete: adminOnly },
       admin: { hidden: ({ user }) => !canManageEditorial(user) },
-      fields: ({ defaultFields }) => {
-        return [...defaultFields, ...searchFields]
-      },
+      fields: withLegacySearchRelations,
     },
   }),
 ]

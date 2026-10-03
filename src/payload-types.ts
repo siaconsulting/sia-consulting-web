@@ -147,6 +147,7 @@ export interface Config {
     'site-settings': SiteSetting;
     'contact-information': ContactInformation;
     'home-settings': HomeSetting;
+    'about-settings': AboutSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -154,6 +155,7 @@ export interface Config {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'contact-information': ContactInformationSelect<false> | ContactInformationSelect<true>;
     'home-settings': HomeSettingsSelect<false> | HomeSettingsSelect<true>;
+    'about-settings': AboutSettingsSelect<false> | AboutSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -255,15 +257,13 @@ export interface Page {
               | ({
                   relationTo: 'team-members';
                   value: number | TeamMember;
-                } | null)
-              | ({
-                  relationTo: 'references';
-                  value: number | Reference;
                 } | null);
             route?:
               | (
                   | '/'
                   | '/a-propos'
+                  | '/contact'
+                  | '/recherche'
                   | '/expertises'
                   | '/secteurs'
                   | '/formations'
@@ -272,8 +272,6 @@ export interface Page {
                   | '/ressources'
                   | '/equipe'
                   | '/references'
-                  | '/contact'
-                  | '/recherche'
                 )
               | null;
             url?: string | null;
@@ -363,6 +361,9 @@ export interface Post {
  */
 export interface Media {
   id: number;
+  /**
+   * Décrivez une image informative. Laissez vide si elle est purement décorative.
+   */
   alt?: string | null;
   caption?: {
     root: {
@@ -1062,14 +1063,6 @@ export interface Reference {
    * Les fiches avec le plus petit nombre apparaissent en premier.
    */
   order?: number | null;
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
   /**
    * La référence est associée depuis chaque étude; les études anonymisées ne figurent pas ici.
    */
@@ -1185,15 +1178,13 @@ export interface CallToActionBlock {
             | ({
                 relationTo: 'team-members';
                 value: number | TeamMember;
-              } | null)
-            | ({
-                relationTo: 'references';
-                value: number | Reference;
               } | null);
           route?:
             | (
                 | '/'
                 | '/a-propos'
+                | '/contact'
+                | '/recherche'
                 | '/expertises'
                 | '/secteurs'
                 | '/formations'
@@ -1202,8 +1193,6 @@ export interface CallToActionBlock {
                 | '/ressources'
                 | '/equipe'
                 | '/references'
-                | '/contact'
-                | '/recherche'
               )
             | null;
           url?: string | null;
@@ -1283,15 +1272,13 @@ export interface ContentBlock {
             | ({
                 relationTo: 'team-members';
                 value: number | TeamMember;
-              } | null)
-            | ({
-                relationTo: 'references';
-                value: number | Reference;
               } | null);
           route?:
             | (
                 | '/'
                 | '/a-propos'
+                | '/contact'
+                | '/recherche'
                 | '/expertises'
                 | '/secteurs'
                 | '/formations'
@@ -1300,8 +1287,6 @@ export interface ContentBlock {
                 | '/ressources'
                 | '/equipe'
                 | '/references'
-                | '/contact'
-                | '/recherche'
               )
             | null;
           url?: string | null;
@@ -1674,6 +1659,34 @@ export interface Redirect {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'services';
+          value: number | Service;
+        } | null)
+      | ({
+          relationTo: 'sectors';
+          value: number | Sector;
+        } | null)
+      | ({
+          relationTo: 'trainings';
+          value: number | Training;
+        } | null)
+      | ({
+          relationTo: 'publications';
+          value: number | Publication;
+        } | null)
+      | ({
+          relationTo: 'case-studies';
+          value: number | CaseStudy;
+        } | null)
+      | ({
+          relationTo: 'team-members';
+          value: number | TeamMember;
+        } | null)
+      | ({
+          relationTo: 'resources';
+          value: number | Resource;
         } | null);
     url?: string | null;
   };
@@ -1707,11 +1720,41 @@ export interface Search {
   id: number;
   title?: string | null;
   priority?: number | null;
-  doc: {
-    relationTo: 'posts';
-    value: number | Post;
-  };
+  doc:
+    | {
+        relationTo: 'services';
+        value: number | Service;
+      }
+    | {
+        relationTo: 'sectors';
+        value: number | Sector;
+      }
+    | {
+        relationTo: 'trainings';
+        value: number | Training;
+      }
+    | {
+        relationTo: 'publications';
+        value: number | Publication;
+      }
+    | {
+        relationTo: 'case-studies';
+        value: number | CaseStudy;
+      }
+    | {
+        relationTo: 'resources';
+        value: number | Resource;
+      }
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      };
+  contentType: 'services' | 'sectors' | 'trainings' | 'publications' | 'case-studies' | 'resources';
   slug?: string | null;
+  url: string;
+  excerpt?: string | null;
+  image?: (number | null) | Media;
+  publishedAt?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -2378,13 +2421,6 @@ export interface ReferencesSelect<T extends boolean = true> {
   sectors?: T;
   featured?: T;
   order?: T;
-  meta?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        image?: T;
-      };
   caseStudies?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2816,7 +2852,12 @@ export interface SearchSelect<T extends boolean = true> {
   title?: T;
   priority?: T;
   doc?: T;
+  contentType?: T;
   slug?: T;
+  url?: T;
+  excerpt?: T;
+  image?: T;
+  publishedAt?: T;
   meta?:
     | T
     | {
@@ -2966,15 +3007,13 @@ export interface Header {
             | ({
                 relationTo: 'team-members';
                 value: number | TeamMember;
-              } | null)
-            | ({
-                relationTo: 'references';
-                value: number | Reference;
               } | null);
           route?:
             | (
                 | '/'
                 | '/a-propos'
+                | '/contact'
+                | '/recherche'
                 | '/expertises'
                 | '/secteurs'
                 | '/formations'
@@ -2983,8 +3022,6 @@ export interface Header {
                 | '/ressources'
                 | '/equipe'
                 | '/references'
-                | '/contact'
-                | '/recherche'
               )
             | null;
           url?: string | null;
@@ -3032,15 +3069,13 @@ export interface Header {
       | ({
           relationTo: 'team-members';
           value: number | TeamMember;
-        } | null)
-      | ({
-          relationTo: 'references';
-          value: number | Reference;
         } | null);
     route?:
       | (
           | '/'
           | '/a-propos'
+          | '/contact'
+          | '/recherche'
           | '/expertises'
           | '/secteurs'
           | '/formations'
@@ -3049,8 +3084,6 @@ export interface Header {
           | '/ressources'
           | '/equipe'
           | '/references'
-          | '/contact'
-          | '/recherche'
         )
       | null;
     url?: string | null;
@@ -3106,15 +3139,13 @@ export interface Footer {
             | ({
                 relationTo: 'team-members';
                 value: number | TeamMember;
-              } | null)
-            | ({
-                relationTo: 'references';
-                value: number | Reference;
               } | null);
           route?:
             | (
                 | '/'
                 | '/a-propos'
+                | '/contact'
+                | '/recherche'
                 | '/expertises'
                 | '/secteurs'
                 | '/formations'
@@ -3123,8 +3154,6 @@ export interface Footer {
                 | '/ressources'
                 | '/equipe'
                 | '/references'
-                | '/contact'
-                | '/recherche'
               )
             | null;
           url?: string | null;
@@ -3177,15 +3206,13 @@ export interface Footer {
                   | ({
                       relationTo: 'team-members';
                       value: number | TeamMember;
-                    } | null)
-                  | ({
-                      relationTo: 'references';
-                      value: number | Reference;
                     } | null);
                 route?:
                   | (
                       | '/'
                       | '/a-propos'
+                      | '/contact'
+                      | '/recherche'
                       | '/expertises'
                       | '/secteurs'
                       | '/formations'
@@ -3194,8 +3221,6 @@ export interface Footer {
                       | '/ressources'
                       | '/equipe'
                       | '/references'
-                      | '/contact'
-                      | '/recherche'
                     )
                   | null;
                 url?: string | null;
@@ -3248,15 +3273,13 @@ export interface Footer {
             | ({
                 relationTo: 'team-members';
                 value: number | TeamMember;
-              } | null)
-            | ({
-                relationTo: 'references';
-                value: number | Reference;
               } | null);
           route?:
             | (
                 | '/'
                 | '/a-propos'
+                | '/contact'
+                | '/recherche'
                 | '/expertises'
                 | '/secteurs'
                 | '/formations'
@@ -3265,8 +3288,6 @@ export interface Footer {
                 | '/ressources'
                 | '/equipe'
                 | '/references'
-                | '/contact'
-                | '/recherche'
               )
             | null;
           url?: string | null;
@@ -3384,15 +3405,13 @@ export interface HomeSetting {
         | ({
             relationTo: 'team-members';
             value: number | TeamMember;
-          } | null)
-        | ({
-            relationTo: 'references';
-            value: number | Reference;
           } | null);
       route?:
         | (
             | '/'
             | '/a-propos'
+            | '/contact'
+            | '/recherche'
             | '/expertises'
             | '/secteurs'
             | '/formations'
@@ -3401,8 +3420,6 @@ export interface HomeSetting {
             | '/ressources'
             | '/equipe'
             | '/references'
-            | '/contact'
-            | '/recherche'
           )
         | null;
       url?: string | null;
@@ -3447,15 +3464,13 @@ export interface HomeSetting {
         | ({
             relationTo: 'team-members';
             value: number | TeamMember;
-          } | null)
-        | ({
-            relationTo: 'references';
-            value: number | Reference;
           } | null);
       route?:
         | (
             | '/'
             | '/a-propos'
+            | '/contact'
+            | '/recherche'
             | '/expertises'
             | '/secteurs'
             | '/formations'
@@ -3464,8 +3479,6 @@ export interface HomeSetting {
             | '/ressources'
             | '/equipe'
             | '/references'
-            | '/contact'
-            | '/recherche'
           )
         | null;
       url?: string | null;
@@ -3552,15 +3565,13 @@ export interface HomeSetting {
         | ({
             relationTo: 'team-members';
             value: number | TeamMember;
-          } | null)
-        | ({
-            relationTo: 'references';
-            value: number | Reference;
           } | null);
       route?:
         | (
             | '/'
             | '/a-propos'
+            | '/contact'
+            | '/recherche'
             | '/expertises'
             | '/secteurs'
             | '/formations'
@@ -3569,14 +3580,147 @@ export interface HomeSetting {
             | '/ressources'
             | '/equipe'
             | '/references'
-            | '/contact'
-            | '/recherche'
           )
         | null;
       url?: string | null;
       label?: string | null;
     };
   };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-settings".
+ */
+export interface AboutSetting {
+  id: number;
+  hero?: {
+    eyebrow?: string | null;
+    title?: string | null;
+    introduction?: string | null;
+    heroImage?: (number | null) | Media;
+  };
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  mission?: {
+    title?: string | null;
+    content?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  vision?: {
+    title?: string | null;
+    content?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  values?:
+    | {
+        title: string;
+        description: string;
+        id?: string | null;
+      }[]
+    | null;
+  cta?: {
+    type?: ('reference' | 'route' | 'custom') | null;
+    newTab?: boolean | null;
+    reference?:
+      | ({
+          relationTo: 'pages';
+          value: number | Page;
+        } | null)
+      | ({
+          relationTo: 'posts';
+          value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'services';
+          value: number | Service;
+        } | null)
+      | ({
+          relationTo: 'sectors';
+          value: number | Sector;
+        } | null)
+      | ({
+          relationTo: 'trainings';
+          value: number | Training;
+        } | null)
+      | ({
+          relationTo: 'publications';
+          value: number | Publication;
+        } | null)
+      | ({
+          relationTo: 'case-studies';
+          value: number | CaseStudy;
+        } | null)
+      | ({
+          relationTo: 'resources';
+          value: number | Resource;
+        } | null)
+      | ({
+          relationTo: 'team-members';
+          value: number | TeamMember;
+        } | null);
+    route?:
+      | (
+          | '/'
+          | '/a-propos'
+          | '/contact'
+          | '/recherche'
+          | '/expertises'
+          | '/secteurs'
+          | '/formations'
+          | '/publications'
+          | '/etudes-de-cas'
+          | '/ressources'
+          | '/equipe'
+          | '/references'
+        )
+      | null;
+    url?: string | null;
+    label?: string | null;
+  };
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  metaImage?: (number | null) | Media;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3790,6 +3934,56 @@ export interface HomeSettingsSelect<T extends boolean = true> {
               label?: T;
             };
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-settings_select".
+ */
+export interface AboutSettingsSelect<T extends boolean = true> {
+  hero?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        introduction?: T;
+        heroImage?: T;
+      };
+  body?: T;
+  mission?:
+    | T
+    | {
+        title?: T;
+        content?: T;
+      };
+  vision?:
+    | T
+    | {
+        title?: T;
+        content?: T;
+      };
+  values?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  cta?:
+    | T
+    | {
+        type?: T;
+        newTab?: T;
+        reference?: T;
+        route?: T;
+        url?: T;
+        label?: T;
+      };
+  metaTitle?: T;
+  metaDescription?: T;
+  metaImage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

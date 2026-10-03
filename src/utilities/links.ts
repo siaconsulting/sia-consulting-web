@@ -1,29 +1,12 @@
-export const INTERNAL_ROUTES = [
-  { label: 'Accueil', value: '/' },
-  { label: 'À propos', value: '/a-propos' },
-  { label: 'Expertises', value: '/expertises' },
-  { label: 'Secteurs', value: '/secteurs' },
-  { label: 'Formations', value: '/formations' },
-  { label: 'Publications', value: '/publications' },
-  { label: 'Études de cas', value: '/etudes-de-cas' },
-  { label: 'Ressources', value: '/ressources' },
-  { label: 'Équipe', value: '/equipe' },
-  { label: 'Références', value: '/references' },
-  { label: 'Contact', value: '/contact' },
-  { label: 'Recherche', value: '/recherche' },
-] as const
+import { getCollectionDetailPath, getCollectionListingPath, PUBLIC_COLLECTION_LINKS, PUBLIC_PAGES, PUBLIC_COLLECTION_ROUTES, type PublicCollection } from '@/utilities/publicRoutes'
 
-const relationshipPrefixes: Record<string, string> = {
-  posts: '/posts',
-  services: '/expertises',
-  sectors: '/secteurs',
-  trainings: '/formations',
-  publications: '/publications',
-  'case-studies': '/etudes-de-cas',
-  'team-members': '/equipe',
-  references: '/references',
-  resources: '/ressources',
-}
+export const INTERNAL_ROUTES = [
+  { label: 'Accueil', value: PUBLIC_PAGES.home },
+  { label: 'À propos', value: PUBLIC_PAGES.about },
+  { label: 'Contact', value: PUBLIC_PAGES.contact },
+  { label: 'Recherche', value: PUBLIC_PAGES.search },
+  ...PUBLIC_COLLECTION_LINKS.map(({ label, collection }) => ({ label, value: getCollectionListingPath(collection) })),
+] as const
 
 type LinkReference = {
   relationTo: string
@@ -82,8 +65,11 @@ export const resolveLinkHref = (link: LinkData): string | null => {
     const slug = link.reference.value.slug
     if (!slug) return null
     if (link.reference.relationTo === 'pages') return slug === 'home' ? '/' : '/' + slug
-    const prefix = relationshipPrefixes[link.reference.relationTo]
-    return prefix ? prefix + '/' + encodeURIComponent(slug) : null
+    if (link.reference.relationTo === 'posts') return `/posts/${encodeURIComponent(slug)}`
+    const collection = link.reference.relationTo as PublicCollection
+    return Object.prototype.hasOwnProperty.call(PUBLIC_COLLECTION_ROUTES, collection)
+      ? getCollectionDetailPath(collection, slug)
+      : null
   }
 
   return null

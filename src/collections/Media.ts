@@ -32,7 +32,8 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
-      //required: true,
+      label: 'Texte alternatif',
+      admin: { description: 'Décrivez une image informative. Laissez vide si elle est purement décorative.' },
     },
     {
       name: 'caption',

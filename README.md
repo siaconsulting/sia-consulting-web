@@ -46,6 +46,8 @@ pnpx create-payload-app my-project -t website
 
 That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
 
+Pour réinstaller les dépendances, utilisez `pnpm install`. Les anciens scripts de template `ii` et `reinstall` ont été retirés : ils réinstallaient les dépendances en supprimant le lockfile et utilisaient des commandes shell non portables.
+
 ## How it works
 
 The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
@@ -138,7 +140,15 @@ This template comes pre-configured with the official [Payload SEO Plugin](https:
 
 ## Search
 
-This template also pre-configured with the official [Payload Search Plugin](https://payloadcms.com/docs/plugins/search) to showcase how SSR search features can easily be implemented into Next.js with Payload. See [Website](#website) for more details.
+La recherche Payload indexe les contenus publics SIA : expertises, secteurs, formations, publications, études de cas et ressources. Les demandes privées, les membres d’équipe et les références ne sont pas indexés. L’index conserve uniquement le titre, le type, l’URL publique, un résumé, une image éventuelle et la date éditoriale. Les brouillons et contenus dépubliés sont exclus par les hooks officiels du plugin.
+
+Après un déploiement ou un changement du mapping de recherche, ADMIN peut reconstruire l’index depuis la collection « Résultats de recherche » dans Payload, ou via l’endpoint officiel authentifié `POST /api/search/reindex` en indiquant dans son corps les collections SIA concernées. Le plugin retire les entrées de chaque collection sélectionnée puis les reconstruit à partir des documents publiés ; ne lancez pas cette opération sans sélectionner les collections prévues.
+
+## Contrat des routes publiques
+
+Le mapping V1 est centralisé dans `src/utilities/publicRoutes.ts`. Les collections ayant une page détail disposent d’un préfixe listing et d’un chemin détail calculable. `references` est une liste uniquement : aucune URL détail n’est générée. Les routes historiques Pages/Posts restent isolées jusqu’à leur migration.
+
+Pour terminer une route publique, suivre la chaîne : implémentation de la route frontend → métadonnées/canonical → preview → sitemap/robots → validation des redirects. Aucun sitemap SIA ou branchement preview métier n’est activé avant l’existence de ses routes.
 
 ## Redirects
 
