@@ -6,6 +6,8 @@ export const PUBLIC_PAGES = {
   about: '/a-propos',
   contact: '/contact',
   search: '/recherche',
+  serviceRequest: '/demande-de-service',
+  trainingRequest: '/demande-de-formation',
 } as const
 
 export const PUBLIC_COLLECTION_ROUTES = {
@@ -42,6 +44,15 @@ export const PUBLIC_COLLECTION_LINKS = [
   { label: 'Équipe', collection: 'team-members' },
   { label: 'Références', collection: 'references' },
 ] as const satisfies readonly { label: string; collection: PublicCollection }[]
+
+/** Minimal navigation shown only until the Header Global receives its own links. */
+export const PUBLIC_PRIMARY_NAV_FALLBACK = [
+  { label: 'Expertises', href: getCollectionListingPath('services') },
+  { label: 'Secteurs', href: getCollectionListingPath('sectors') },
+  { label: 'Formations', href: getCollectionListingPath('trainings') },
+  { label: 'Publications', href: getCollectionListingPath('publications') },
+  { label: 'À propos', href: getPublicRoutePath('about') },
+] as const
 
 /** Legacy routes remain explicit until Pages/Posts are retired. */
 export const getLegacyDetailPath = (collection: 'pages' | 'posts', slug: string): string =>

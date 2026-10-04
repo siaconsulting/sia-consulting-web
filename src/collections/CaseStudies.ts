@@ -14,6 +14,7 @@ import {
   editorialLabels,
   editorialVersions,
 } from './shared/editorialConfig'
+import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 
 const validateClientDisclosure: CollectionBeforeChangeHook<CaseStudy> = async ({ data, originalDoc, req }) => {
   const disclosure = data.clientDisclosure ?? originalDoc?.clientDisclosure
@@ -66,7 +67,11 @@ export const CaseStudies: CollectionConfig<'case-studies'> = {
   defaultSort: '-publishedAt',
   labels: editorialLabels("Étude de cas", 'Études de cas'),
   access: editorialAccess,
-  admin: editorialAdmin({ group: 'Contenus', defaultColumns: ['title', 'clientDisclosure', 'publishedAt', '_status'] }),
+  admin: {
+    ...editorialAdmin({ group: 'Contenus', defaultColumns: ['title', 'clientDisclosure', 'publishedAt', '_status'] }),
+    livePreview: { url: ({ data, req }) => generatePreviewPath({ collection: 'case-studies', slug: data?.slug as string, req }) },
+    preview: (data, { req }) => generatePreviewPath({ collection: 'case-studies', slug: data?.slug as string, req }),
+  },
   defaultPopulate: { title: true, slug: true, shortDescription: true, coverImage: true, clientDisclosure: true },
   fields: [
     {

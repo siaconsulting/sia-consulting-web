@@ -1,9 +1,8 @@
 import type React from 'react'
-import type { Page, Post } from '@/payload-types'
-
 import { getCachedDocument } from '@/utilities/getDocument'
 import { getCachedRedirects } from '@/utilities/getRedirects'
 import { notFound, redirect } from 'next/navigation'
+import { getCollectionDetailPath, getLegacyDetailPath, PUBLIC_COLLECTION_ROUTES, type PublicCollection } from '@/utilities/publicRoutes'
 
 interface Props {
   disableNotFound?: boolean
@@ -21,25 +20,27 @@ export const PayloadRedirects: React.FC<Props> = async ({ disableNotFound, url }
       redirect(redirectItem.to.url)
     }
 
-    let redirectUrl: string
+    const reference = redirectItem.to?.reference
+    if (reference) {
+      const value = reference.value
+      const document = typeof value === 'object'
+        ? value
+        : await getCachedDocument(reference.relationTo, value)()
+      const slug = typeof document === 'object' && document && 'slug' in document && typeof document.slug === 'string'
+        ? document.slug
+        : null
 
-    if (typeof redirectItem.to?.reference?.value === 'string') {
-      const collection = redirectItem.to?.reference?.relationTo
-      const id = redirectItem.to?.reference?.value
-
-      const document = (await getCachedDocument(collection, id)()) as Page | Post
-      redirectUrl = `${redirectItem.to?.reference?.relationTo !== 'pages' ? `/${redirectItem.to?.reference?.relationTo}` : ''}/${
-        document?.slug
-      }`
-    } else {
-      redirectUrl = `${redirectItem.to?.reference?.relationTo !== 'pages' ? `/${redirectItem.to?.reference?.relationTo}` : ''}/${
-        typeof redirectItem.to?.reference?.value === 'object'
-          ? redirectItem.to?.reference?.value?.slug
-          : ''
-      }`
+      if (slug) {
+        const redirectUrl = reference.relationTo === 'pages'
+          ? getLegacyDetailPath('pages', slug)
+          : reference.relationTo === 'posts'
+            ? getLegacyDetailPath('posts', slug)
+            : Object.prototype.hasOwnProperty.call(PUBLIC_COLLECTION_ROUTES, reference.relationTo)
+              ? getCollectionDetailPath(reference.relationTo as PublicCollection, slug)
+              : null
+        if (redirectUrl) redirect(redirectUrl)
+      }
     }
-
-    if (redirectUrl) redirect(redirectUrl)
   }
 
   if (disableNotFound) return null

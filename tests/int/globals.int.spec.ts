@@ -9,6 +9,8 @@ import { canRunDemoSeed } from '@/utilities/seedAccess'
 import { getPreviewDocumentPath } from '@/utilities/generatePreviewPath'
 import { redirectCollections } from '@/plugins'
 import { SIA_SEARCH_COLLECTIONS } from '@/search/fieldOverrides'
+import { PUBLIC_PRIMARY_NAV_FALLBACK } from '@/utilities/publicRoutes'
+import { getEditorialRevalidationTargets } from '@/utilities/editorialRevalidation'
 
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`
 const globalFields = {
@@ -93,12 +95,23 @@ describe('Globals SIA', () => {
     })).rejects.toThrow()
     expect(getGlobalRevalidationTargets('home-settings')).toEqual({ paths: [{ path: '/', type: 'page' }], tags: ['global_home-settings', 'homepage'] })
     expect(getGlobalRevalidationTargets('about-settings')).toEqual({ paths: [{ path: '/a-propos', type: 'page' }], tags: ['global_about-settings', 'about'] })
+    expect(getEditorialRevalidationTargets('services', ['homepage-service'])).toMatchObject({
+      paths: expect.arrayContaining([{ path: '/', type: 'page' }]),
+      tags: expect.arrayContaining(['homepage']),
+    })
     expect(getCollectionListingPath('services')).toBe('/expertises')
     expect(getCollectionDetailPath('services', 'actuariat')).toBe('/expertises/actuariat')
     expect(getCollectionDetailPath('case-studies', 'cas-sia')).toBe('/etudes-de-cas/cas-sia')
     expect(getCollectionDetailPath('team-members', 'membre')).toBe('/equipe/membre')
     expect(getCollectionDetailPath('resources', 'rapport')).toBe('/ressources/rapport')
     expect(getCollectionDetailPath('references', 'organisation')).toBeNull()
+    expect(PUBLIC_PRIMARY_NAV_FALLBACK).toEqual([
+      { label: 'Expertises', href: '/expertises' },
+      { label: 'Secteurs', href: '/secteurs' },
+      { label: 'Formations', href: '/formations' },
+      { label: 'Publications', href: '/publications' },
+      { label: 'À propos', href: '/a-propos' },
+    ])
     expect(getPreviewDocumentPath('services', 'actuariat')).toBe('/expertises/actuariat')
     expect(getPreviewDocumentPath('references', 'organisation')).toBeNull()
     expect(redirectCollections).toEqual(expect.arrayContaining(['services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'resources']))

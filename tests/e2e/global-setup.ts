@@ -22,7 +22,16 @@ export default async function globalSetup(config: FullConfig): Promise<() => Pro
   const nextCLI = resolve(process.cwd(), 'node_modules/next/dist/bin/next')
   const child = spawn(process.execPath, [nextCLI, 'start', '--port', port], {
     cwd: process.cwd(),
-    env: { ...process.env, NODE_OPTIONS: '--no-deprecation' },
+    env: {
+      ...process.env,
+      NODE_OPTIONS: '--no-deprecation',
+      SUBMISSION_TRUSTED_PROXY_IP_HEADER: 'x-real-ip',
+      SUBMISSION_PRIVACY_CONSENT_REQUIRED: 'false',
+      SUBMISSION_PRIVACY_NOTICE_VERSION: '',
+      SUBMISSION_PRIVACY_NOTICE_TEXT: '',
+      SMTP_HOST: '', SMTP_PORT: '', SMTP_USER: '', SMTP_PASS: '', SMTP_FROM_ADDRESS: '', SMTP_FROM_NAME: '',
+      SUBMISSION_NOTIFICATION_TO: '',
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
 

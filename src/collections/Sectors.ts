@@ -12,13 +12,18 @@ import {
   editorialVersions,
 } from './shared/editorialConfig'
 import { editorialAfterChange, editorialAfterDelete } from '@/hooks/revalidateEditorial'
+import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 
 export const Sectors: CollectionConfig<'sectors'> = {
   slug: 'sectors',
   defaultSort: 'order',
   labels: editorialLabels('Secteur', 'Secteurs'),
   access: editorialAccess,
-  admin: editorialAdmin(),
+  admin: {
+    ...editorialAdmin(),
+    livePreview: { url: ({ data, req }) => generatePreviewPath({ collection: 'sectors', slug: data?.slug as string, req }) },
+    preview: (data, { req }) => generatePreviewPath({ collection: 'sectors', slug: data?.slug as string, req }),
+  },
   defaultPopulate: { title: true, slug: true, shortDescription: true, heroImage: true },
   fields: [
     {

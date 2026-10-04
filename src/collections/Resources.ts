@@ -12,13 +12,18 @@ import {
   editorialLabels,
   editorialVersions,
 } from './shared/editorialConfig'
+import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 
 export const Resources: CollectionConfig<'resources'> = {
   slug: 'resources',
   defaultSort: '-publishedAt',
   labels: editorialLabels('Ressource', 'Ressources'),
   access: editorialAccess,
-  admin: editorialAdmin({ group: 'Contenus', defaultColumns: ['title', 'type', 'publishedAt', '_status'] }),
+  admin: {
+    ...editorialAdmin({ group: 'Contenus', defaultColumns: ['title', 'type', 'publishedAt', '_status'] }),
+    livePreview: { url: ({ data, req }) => generatePreviewPath({ collection: 'resources', slug: data?.slug as string, req }) },
+    preview: (data, { req }) => generatePreviewPath({ collection: 'resources', slug: data?.slug as string, req }),
+  },
   defaultPopulate: { title: true, slug: true, shortDescription: true, type: true, coverImage: true, file: true },
   fields: [
     {

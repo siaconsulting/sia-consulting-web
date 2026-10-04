@@ -21,6 +21,7 @@ import type {
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { cn } from '@/utilities/ui'
+import { resolveLinkHref } from '@/utilities/links'
 
 type NodeTypes =
   | DefaultNodeTypes
@@ -28,11 +29,9 @@ type NodeTypes =
 
 const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
   const { value, relationTo } = linkNode.fields.doc!
-  if (typeof value !== 'object') {
-    throw new Error('Expected value to be an object')
-  }
-  const slug = value.slug
-  return relationTo === 'posts' ? `/posts/${slug}` : `/${slug}`
+  if (typeof value !== 'object' || value === null) return '#'
+  const slug = typeof value.slug === 'string' ? value.slug : undefined
+  return resolveLinkHref({ type: 'reference', reference: { relationTo, value: { slug } } }) ?? '#'
 }
 
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({

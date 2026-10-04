@@ -3,6 +3,8 @@ import { getPayload, type Payload } from 'payload'
 import config from '@/payload.config'
 import type { Service } from '@/payload-types'
 import { buildSearchResultFields } from '@/search/beforeSync'
+import { queryPublicSearchIndex } from '@/search/queryPublicSearchIndex'
+import { normalizeSearchQuery, parsePublicSearchType, parseSearchPage, PUBLIC_SEARCH_TYPE_LABELS } from '@/utilities/publicSearch'
 
 const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`
 const richText = {
@@ -72,6 +74,37 @@ describe('SIA multi-type search index', () => {
     expect(serviceResult.docs[0]).toMatchObject({ contentType: 'services', url: `/expertises/${service.slug}`, excerpt: 'Résumé service' })
     expect(trainingResult.docs[0]).toMatchObject({ contentType: 'trainings', url: `/formations/${training.slug}`, excerpt: 'Résumé formation' })
     expect(publicationResult.docs[0]).toMatchObject({ contentType: 'publications', url: `/publications/${publication.slug}`, excerpt: 'Résumé publication' })
+
+    const matches = await queryPublicSearchIndex(payload, { query: `Recherche ${suffix}`, page: 1 })
+    expect(matches.totalDocs).toBeGreaterThanOrEqual(3)
+    expect(matches.docs.map(({ contentType }) => contentType)).toEqual(expect.arrayContaining(['services', 'trainings', 'publications']))
+    expect(matches.docs.every(({ url }) => !url.startsWith('/posts/'))).toBe(true)
+
+    const publicationsOnly = await queryPublicSearchIndex(payload, { query: `Recherche ${suffix}`, type: 'publications', page: 1 })
+    expect(publicationsOnly.docs).toHaveLength(1)
+    expect(publicationsOnly.docs[0]).toMatchObject({ contentType: 'publications', url: `/publications/${publication.slug}` })
+
+    for (let index = 1; index <= 11; index++) {
+      const item = await payload.create({
+        collection: 'services',
+        data: {
+          title: `pagination ${suffix}`,
+          slug: `search-pagination-${suffix}-${index}`,
+          shortDescription: `Page fixture ${index}`,
+          body: richText,
+          _status: 'published',
+        } as never,
+        overrideAccess: true,
+        context: { disableRevalidate: true },
+      })
+      created.push({ collection: 'services', id: item.id })
+    }
+    const firstPage = await queryPublicSearchIndex(payload, { query: `pagination ${suffix}`, page: 1 })
+    const secondPage = await queryPublicSearchIndex(payload, { query: `pagination ${suffix}`, page: 2 })
+    expect(firstPage.totalDocs).toBe(11)
+    expect(firstPage.totalPages).toBe(2)
+    expect(firstPage.docs).toHaveLength(10)
+    expect(secondPage.docs).toHaveLength(1)
   })
 
   it('excludes drafts and removes a result when its document is unpublished', async () => {
@@ -110,5 +143,29 @@ describe('SIA multi-type search index', () => {
     expect(service).not.toHaveProperty('body')
     expect(buildSearchResultFields('case-studies', { slug: 'case' }).url).toBe('/etudes-de-cas/case')
     expect(buildSearchResultFields('resources', { slug: 'guide' }).url).toBe('/ressources/guide')
+    const anonymousCaseResult = buildSearchResultFields('case-studies', {
+      slug: 'anonymous-case',
+      title: 'Étude anonymisée',
+      shortDescription: 'Une description publiable.',
+      clientDisclosure: 'anonymous',
+      anonymousClientLabel: 'Compagnie régionale',
+      clientReference: { name: 'Organisation confidentielle', logo: 34, website: 'https://private.example' },
+    })
+    expect(anonymousCaseResult).not.toHaveProperty('clientReference')
+    expect(anonymousCaseResult).not.toHaveProperty('anonymousClientLabel')
+    expect(anonymousCaseResult).not.toHaveProperty('image')
+    expect(anonymousCaseResult.excerpt).toBe('Une description publiable.')
+    expect(PUBLIC_SEARCH_TYPE_LABELS).not.toHaveProperty('team-members')
+    expect(PUBLIC_SEARCH_TYPE_LABELS).not.toHaveProperty('references')
+  })
+
+  it('normalizes URL input without stripping French accents and rejects invalid filters safely', () => {
+    expect(normalizeSearchQuery("  étude   d’assurance & risques  ")).toEqual({ query: "étude d’assurance & risques", truncated: false })
+    expect(normalizeSearchQuery('é'.repeat(140))).toEqual({ query: 'é'.repeat(120), truncated: true })
+    expect(normalizeSearchQuery(['  ', 'ignored'])).toEqual({ query: '', truncated: false })
+    expect(parsePublicSearchType('publications')).toBe('publications')
+    expect(parsePublicSearchType('contact-requests')).toBeUndefined()
+    expect(parseSearchPage('999')).toBe(999)
+    expect(parseSearchPage('1e9')).toBe(1)
   })
 })

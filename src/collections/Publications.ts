@@ -13,13 +13,18 @@ import {
   editorialLabels,
   editorialVersions,
 } from './shared/editorialConfig'
+import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 
 export const Publications: CollectionConfig<'publications'> = {
   slug: 'publications',
   defaultSort: '-publishedAt',
   labels: editorialLabels('Publication', 'Publications'),
   access: editorialAccess,
-  admin: editorialAdmin({ group: 'Contenus', defaultColumns: ['title', 'type', 'publishedAt', '_status'] }),
+  admin: {
+    ...editorialAdmin({ group: 'Contenus', defaultColumns: ['title', 'type', 'publishedAt', '_status'] }),
+    livePreview: { url: ({ data, req }) => generatePreviewPath({ collection: 'publications', slug: data?.slug as string, req }) },
+    preview: (data, { req }) => generatePreviewPath({ collection: 'publications', slug: data?.slug as string, req }),
+  },
   defaultPopulate: { title: true, slug: true, excerpt: true, type: true, coverImage: true, publishedAt: true },
   fields: [
     {

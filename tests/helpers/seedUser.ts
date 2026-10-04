@@ -50,6 +50,8 @@ export async function cleanupTestUser(): Promise<void> {
     overrideAccess: true,
   })
 
-  await payload.destroy()
+  // Keep the worker's Payload instance alive for later E2E files. Payload caches
+  // initialized instances by config; destroying it here leaves that cached
+  // instance unusable for subsequent suites in the same Playwright worker.
   testPayload = undefined
 }

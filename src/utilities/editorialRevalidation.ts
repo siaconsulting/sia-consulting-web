@@ -13,8 +13,9 @@ export const getEditorialRevalidationTargets = (
 ): EditorialRevalidationTargets => {
   const paths: EditorialRevalidationTargets['paths'] = [
     { path: getCollectionListingPath(collection), type: 'page' },
+    { path: '/', type: 'page' },
   ]
-  const tags = [`${collection}_list`]
+  const tags = ['homepage']
 
   for (const slug of new Set(slugs.filter((value): value is string => Boolean(value)))) {
     const detailPath = getCollectionDetailPath(collection, slug)

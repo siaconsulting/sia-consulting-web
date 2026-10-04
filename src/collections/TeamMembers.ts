@@ -8,13 +8,18 @@ import {
   editorialLabels,
   editorialVersions,
 } from './shared/editorialConfig'
+import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 
 export const TeamMembers: CollectionConfig<'team-members'> = {
   slug: 'team-members',
   defaultSort: 'order',
   labels: editorialLabels('Membre de l’équipe', 'Équipe'),
   access: editorialAccess,
-  admin: editorialAdmin({ group: 'Organisation', titleField: 'name', defaultColumns: ['name', 'jobTitle', 'featured', '_status'] }),
+  admin: {
+    ...editorialAdmin({ group: 'Organisation', titleField: 'name', defaultColumns: ['name', 'jobTitle', 'featured', '_status'] }),
+    livePreview: { url: ({ data, req }) => generatePreviewPath({ collection: 'team-members', slug: data?.slug as string, req }) },
+    preview: (data, { req }) => generatePreviewPath({ collection: 'team-members', slug: data?.slug as string, req }),
+  },
   defaultPopulate: { name: true, slug: true, jobTitle: true, photo: true },
   fields: [
     {
