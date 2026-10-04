@@ -53,7 +53,3 @@ export const PUBLIC_PRIMARY_NAV_FALLBACK = [
   { label: 'Publications', href: getCollectionListingPath('publications') },
   { label: 'À propos', href: getPublicRoutePath('about') },
 ] as const
-
-/** Legacy routes remain explicit until Pages/Posts are retired. */
-export const getLegacyDetailPath = (collection: 'pages' | 'posts', slug: string): string =>
-  collection === 'posts' ? `/posts/${encodeURIComponent(slug)}` : slug === 'home' ? '/' : `/${encodeURIComponent(slug)}`

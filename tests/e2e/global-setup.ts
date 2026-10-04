@@ -24,6 +24,7 @@ export default async function globalSetup(config: FullConfig): Promise<() => Pro
     cwd: process.cwd(),
     env: {
       ...process.env,
+      NODE_ENV: 'production',
       NODE_OPTIONS: '--no-deprecation',
       SUBMISSION_TRUSTED_PROXY_IP_HEADER: 'x-real-ip',
       SUBMISSION_PRIVACY_CONSENT_REQUIRED: 'false',

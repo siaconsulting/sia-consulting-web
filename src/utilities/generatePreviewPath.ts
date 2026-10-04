@@ -1,14 +1,12 @@
 import type { PreviewSearchParams } from '@/app/(frontend)/next/preview/route'
 import type { PayloadRequest } from 'payload'
-import { getCollectionDetailPath, getLegacyDetailPath, type PublicCollection } from '@/utilities/publicRoutes'
+import { getCollectionDetailPath, type PublicCollection } from '@/utilities/publicRoutes'
 
-export const getPreviewDocumentPath = (collection: 'pages' | 'posts' | PublicCollection, slug: string): string | null => {
-  if (collection === 'pages' || collection === 'posts') return getLegacyDetailPath(collection, slug)
-  return getCollectionDetailPath(collection, slug)
-}
+export const getPreviewDocumentPath = (collection: PublicCollection, slug: string): string | null =>
+  getCollectionDetailPath(collection, slug)
 
 type Props = {
-  collection: 'pages' | 'posts' | PublicCollection
+  collection: PublicCollection
   slug: string
   req: PayloadRequest
 }

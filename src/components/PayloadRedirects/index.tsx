@@ -2,7 +2,7 @@ import type React from 'react'
 import { getCachedDocument } from '@/utilities/getDocument'
 import { getCachedRedirects } from '@/utilities/getRedirects'
 import { notFound, redirect } from 'next/navigation'
-import { getCollectionDetailPath, getLegacyDetailPath, PUBLIC_COLLECTION_ROUTES, type PublicCollection } from '@/utilities/publicRoutes'
+import { getCollectionDetailPath, PUBLIC_COLLECTION_ROUTES, type PublicCollection } from '@/utilities/publicRoutes'
 
 interface Props {
   disableNotFound?: boolean
@@ -31,13 +31,9 @@ export const PayloadRedirects: React.FC<Props> = async ({ disableNotFound, url }
         : null
 
       if (slug) {
-        const redirectUrl = reference.relationTo === 'pages'
-          ? getLegacyDetailPath('pages', slug)
-          : reference.relationTo === 'posts'
-            ? getLegacyDetailPath('posts', slug)
-            : Object.prototype.hasOwnProperty.call(PUBLIC_COLLECTION_ROUTES, reference.relationTo)
-              ? getCollectionDetailPath(reference.relationTo as PublicCollection, slug)
-              : null
+        const redirectUrl = Object.prototype.hasOwnProperty.call(PUBLIC_COLLECTION_ROUTES, reference.relationTo)
+          ? getCollectionDetailPath(reference.relationTo as PublicCollection, slug)
+          : null
         if (redirectUrl) redirect(redirectUrl)
       }
     }

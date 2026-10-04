@@ -38,8 +38,6 @@ const generateDescription: GenerateDescription<SEOContent> = ({ doc }) =>
 const generateURL: GenerateURL<SEOContent> = ({ collectionConfig, doc }) => {
   const url = getServerSideURL()
   if (!collectionConfig || !doc?.slug) return url
-  if (collectionConfig.slug === 'pages') return `${url}${doc.slug === 'home' ? '' : `/${doc.slug}`}`
-  if (collectionConfig.slug === 'posts') return `${url}/posts/${doc.slug}`
   const detailPath = getCollectionDetailPath(collectionConfig.slug as PublicCollection, doc.slug)
   return detailPath ? `${url}${detailPath}` : url
 }

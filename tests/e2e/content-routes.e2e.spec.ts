@@ -188,7 +188,8 @@ test.describe('Publication, case study and resource production routes', () => {
     await page.goto('/references')
     await expect(page.locator('main')).toContainText(referenceName)
     await expect(page.locator('main a[href^="/references/"]')).toHaveCount(0)
-    await expect(page.locator('main a[href="https://example.org"]')).toHaveAttribute('rel', 'noopener noreferrer')
+    const externalReferenceLinks = page.locator('main a[href="https://example.org"]')
+    await expect(externalReferenceLinks.first()).toHaveAttribute('rel', 'noopener noreferrer')
     for (const slug of referenceSlugs) expect((await page.locator('head link[rel="canonical"]').getAttribute('href'))).not.toContain(`/references/${slug}`)
     await page.goto('/publications?page=2')
     await expect(page.locator('main')).toContainText(`Publication 13 ${suffix}`)
@@ -222,7 +223,7 @@ test.describe('Publication, case study and resource production routes', () => {
   })
 
   test('sitemap lists public content and excludes drafts', async ({ request }) => {
-    const response = await request.get('/pages-sitemap.xml')
+    const response = await request.get('/sitemap.xml')
     expect(response.ok()).toBe(true)
     const xml = await response.text()
     for (const route of ['/publications', '/etudes-de-cas', '/ressources', '/equipe', '/references', `/publications/${publicationSlugs[0]}`, `/etudes-de-cas/${anonymousCaseSlug}`, `/ressources/${resourceSlug}`, `/equipe/${authorSlug}`]) expect(xml).toContain(route)

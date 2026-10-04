@@ -86,4 +86,37 @@ test.describe('Frontend', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'SIA Consulting' })).toBeVisible()
     expect(transitionDuration).toBe('1e-05s')
   })
+
+  test('retired template URLs cannot capture public routes and legacy search has one destination', async ({ page, request }) => {
+    await page.goto('/search')
+    await expect(page).toHaveURL(/\/recherche$/)
+
+    for (const path of ['/posts', '/posts/template-slug', '/posts/page/2', '/next/seed', '/unknown-template-route']) {
+      const response = await request.get(path)
+      expect(response.status(), `${path} should not be a legacy content route`).toBe(404)
+    }
+    for (const path of ['/pages-sitemap.xml', '/posts-sitemap.xml']) {
+      const response = await request.get(path)
+      expect(response.status(), `${path} should be retired`).toBe(404)
+    }
+  })
+
+  test('canonical sitemap and robots expose only the SIA public surface', async ({ request }) => {
+    const sitemapResponse = await request.get('/sitemap.xml')
+    expect(sitemapResponse.ok()).toBe(true)
+    const sitemap = await sitemapResponse.text()
+    expect(sitemap).toContain('/expertises')
+    expect(sitemap).toContain('/publications')
+    expect(sitemap).not.toContain('/posts')
+    expect(sitemap).not.toContain('/search')
+    expect(sitemap).not.toContain('/demande-de-service')
+    expect(sitemap).not.toContain('/references/')
+
+    const robotsResponse = await request.get('/robots.txt')
+    expect(robotsResponse.ok()).toBe(true)
+    const robots = await robotsResponse.text()
+    expect(robots).toContain('/sitemap.xml')
+    expect(robots).not.toContain('pages-sitemap.xml')
+    expect(robots).not.toContain('posts-sitemap.xml')
+  })
 })

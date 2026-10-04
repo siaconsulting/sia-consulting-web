@@ -47,7 +47,8 @@ export const validateHTTPSURL = (value: string | null | undefined): true | strin
 }
 
 const isSafeLegacyPath = (value: string) =>
-  value.startsWith('/') && !value.startsWith('//') && !value.includes('\\') && !/[\u0000-\u001f]/.test(value)
+  value.startsWith('/') && !value.startsWith('//') && !value.includes('\\') && !/[\u0000-\u001f]/.test(value) &&
+  !/^\/(?:posts|search)(?:\/|$)/.test(value)
 
 export const resolveLinkHref = (link: LinkData): string | null => {
   if (link.type === 'route') {
@@ -56,7 +57,7 @@ export const resolveLinkHref = (link: LinkData): string | null => {
 
   if (link.type === 'custom') {
     if (validateExternalURL(link.url) === true && link.url) return link.url
-    // Keep saved template links working; new Payload input accepts external schemes only.
+    // Keep safe legacy internal links working, but never restore retired template routes.
     if (link.url && isSafeLegacyPath(link.url)) return link.url
     return null
   }
@@ -64,8 +65,12 @@ export const resolveLinkHref = (link: LinkData): string | null => {
   if (link.type === 'reference' && link.reference && typeof link.reference.value === 'object') {
     const slug = link.reference.value.slug
     if (!slug) return null
-    if (link.reference.relationTo === 'pages') return slug === 'home' ? '/' : '/' + slug
-    if (link.reference.relationTo === 'posts') return `/posts/${encodeURIComponent(slug)}`
+    if (link.reference.relationTo === 'pages') {
+      return Object.values(PUBLIC_PAGES).includes(`/${slug}` as (typeof PUBLIC_PAGES)[keyof typeof PUBLIC_PAGES])
+        ? `/${slug}`
+        : slug === 'home' ? '/' : null
+    }
+    if (link.reference.relationTo === 'posts') return null
     const collection = link.reference.relationTo as PublicCollection
     return Object.prototype.hasOwnProperty.call(PUBLIC_COLLECTION_ROUTES, collection)
       ? getCollectionDetailPath(collection, slug)

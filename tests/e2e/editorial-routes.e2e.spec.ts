@@ -71,7 +71,6 @@ test.describe('Editorial production routes', () => {
     if (service?.id) await payload.delete({ collection: 'services', id: service.id, overrideAccess: true, context: { disableRevalidate: true } }).catch(() => undefined)
     if (draftServiceID) await payload.delete({ collection: 'services', id: draftServiceID, overrideAccess: true, context: { disableRevalidate: true } }).catch(() => undefined)
     if (sectorID) await payload.delete({ collection: 'sectors', id: sectorID, overrideAccess: true, context: { disableRevalidate: true } }).catch(() => undefined)
-    await payload.destroy()
   })
 
   test('published listings and all three details render and reflow across supported widths', async ({ page }) => {
@@ -118,7 +117,7 @@ test.describe('Editorial production routes', () => {
   })
 
   test('sitemap contains catalog listings and published details, but no drafts', async ({ request }) => {
-    const response = await request.get('/pages-sitemap.xml')
+    const response = await request.get('/sitemap.xml')
     expect(response.ok()).toBe(true)
     const xml = await response.text()
     for (const path of ['/expertises', '/secteurs', '/formations']) {

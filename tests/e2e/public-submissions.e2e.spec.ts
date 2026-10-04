@@ -42,7 +42,6 @@ test.describe('public SIA request journeys', () => {
     for (const item of requests.reverse()) await payload.delete({ collection: item.collection, id: item.id, overrideAccess: true }).catch(() => undefined)
     if (service?.id) await payload.delete({ collection: 'services', id: service.id, overrideAccess: true, context: { disableRevalidate: true } }).catch(() => undefined)
     if (training?.id) await payload.delete({ collection: 'trainings', id: training.id, overrideAccess: true, context: { disableRevalidate: true } }).catch(() => undefined)
-    await payload.destroy()
   })
 
   test('contact form persists one request, reports success, and does not render submitted HTML', async ({ page }) => {

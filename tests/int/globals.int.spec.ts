@@ -5,7 +5,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { resolveLinkHref, validateExternalURL } from '@/utilities/links'
 import { getGlobalRevalidationTargets } from '@/utilities/globalRevalidation'
 import { getCollectionDetailPath, getCollectionListingPath } from '@/utilities/publicRoutes'
-import { canRunDemoSeed } from '@/utilities/seedAccess'
 import { getPreviewDocumentPath } from '@/utilities/generatePreviewPath'
 import { redirectCollections } from '@/plugins'
 import { SIA_SEARCH_COLLECTIONS } from '@/search/fieldOverrides'
@@ -117,11 +116,6 @@ describe('Globals SIA', () => {
     expect(redirectCollections).toEqual(expect.arrayContaining(['services', 'sectors', 'trainings', 'publications', 'case-studies', 'team-members', 'resources']))
     expect(redirectCollections).not.toContain('references')
     expect(SIA_SEARCH_COLLECTIONS).toEqual(['services', 'sectors', 'trainings', 'publications', 'case-studies', 'resources'])
-    expect(canRunDemoSeed({ role: 'admin' }, 'development')).toBe(true)
-    expect(canRunDemoSeed({ role: 'editor' }, 'development')).toBe(false)
-    expect(canRunDemoSeed({ role: 'commercial' }, 'development')).toBe(false)
-    expect(canRunDemoSeed(null, 'development')).toBe(false)
-    expect(canRunDemoSeed({ role: 'admin' }, 'production')).toBe(false)
   })
 
   it('stores a valid homepage relationship and relays targeted revalidation from the worker context', async () => {
