@@ -1,0 +1,23 @@
+[Unit]
+Description=Encrypted SIA PostgreSQL and media backup
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=sia-backup
+Group=sia-runtime
+WorkingDirectory=/srv/apps/sia-consulting-web/current
+StateDirectory=sia-backup
+Environment=HOME=/var/lib/sia-backup
+Environment=SIA_ENV_FILE=/srv/apps/sia-consulting-web/shared/.env
+EnvironmentFile=/etc/sia-consulting-web/backup.env
+ExecStart=/usr/bin/env bash /srv/apps/sia-consulting-web/current/scripts/backup-production.sh
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/backups/sia-consulting-web
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

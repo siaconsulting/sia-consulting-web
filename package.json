@@ -1,5 +1,6 @@
 {
   "name": "sia-consulting-web",
+  "packageManager": "pnpm@11.25.0",
   "version": "1.0.0",
   "description": "Corporate website for SIA Consulting",
   "license": "MIT",
@@ -12,7 +13,12 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "db:migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "db:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
+    "db:migrate:production": "cross-env NODE_ENV=production NODE_OPTIONS=--no-deprecation payload migrate",
     "db:migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
+    "db:migrate:status:production": "cross-env NODE_ENV=production NODE_OPTIONS=--no-deprecation payload migrate:status",
+    "production:check-env": "node scripts/check-production-env.mjs",
+    "production:check-forms": "node scripts/check-production-env.mjs --forms-ready",
+    "production:deploy": "bash scripts/deploy-production.sh",
     "jobs:run": "cross-env NODE_OPTIONS=--no-deprecation payload jobs:run --cron \"* * * * *\"",
     "jobs:run:once": "cross-env NODE_OPTIONS=--no-deprecation payload jobs:run",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
@@ -81,14 +87,7 @@
     "vitest": "4.0.18"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0",
-    "pnpm": "^9 || ^10 || ^11"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "esbuild",
-      "unrs-resolver"
-    ]
+    "node": ">=20.9.0",
+    "pnpm": "11.25.0"
   }
 }

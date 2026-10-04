@@ -26,6 +26,7 @@ export default async function globalSetup(config: FullConfig): Promise<() => Pro
       ...process.env,
       NODE_ENV: 'production',
       NODE_OPTIONS: '--no-deprecation',
+      NEXT_PUBLIC_SERVER_URL: 'https://sia-e2e.invalid',
       SUBMISSION_TRUSTED_PROXY_IP_HEADER: 'x-real-ip',
       SUBMISSION_PRIVACY_CONSENT_REQUIRED: 'false',
       SUBMISSION_PRIVACY_NOTICE_VERSION: '',

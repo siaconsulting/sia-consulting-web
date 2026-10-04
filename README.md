@@ -169,7 +169,7 @@ Le runner officiel Payload traite la queue par défaut chaque minute. Pour trait
 
 Si le serveur web utilise un autre port, adaptez `NEXT_PUBLIC_SERVER_URL` dans `.env` à cette même adresse.
 
-En production VPS, prévoyez trois services : le processus web Next.js/Payload, un processus jobs Payload supervisé séparément et PostgreSQL. Le runner devra être maintenu en fonctionnement par un superviseur (par exemple systemd, Docker Compose ou un process manager), choix à faire lors du déploiement. Les hooks de publication demandent la revalidation au processus web par une route interne protégée par `REVALIDATION_SECRET`.
+En production VPS, le modèle retenu est PostgreSQL local, le processus web Next.js/Payload et un runner Payload séparé supervisé par systemd, derrière le Nginx partagé. Les hooks de publication demandent la revalidation au processus web par une route interne protégée par `REVALIDATION_SECRET`. Le runbook est dans [`docs/PRODUCTION.md`](docs/PRODUCTION.md).
 
 ## Website
 
@@ -233,27 +233,9 @@ pnpm db:migrate
 
 This command will check for any migrations that have not yet been run and try to run them and it will keep a record of migrations that have been run in the database.
 
-### Docker
+### Base locale
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-### Seed
-
-To seed the database with a few pages, posts, and projects you can click the 'seed database' link from the admin panel.
-
-The seed script will also create a demo user for demonstration purposes only:
-
-- Demo Author
-  - Email: `demo-author@payloadcms.com`
-  - Password: `password`
-
-> NOTICE: seeding the database is destructive because it drops your current database to populate a fresh one from the seed template. Only run this command if you are starting a new project or can afford to lose your current data.
+Le développement et les tests utilisent une base PostgreSQL locale de type sandbox, avec `DATABASE_URL` dans le fichier `.env` local ignoré par Git. Les fixtures des tests sont temporaires et ne doivent jamais être copiées vers la production. La production démarre avec une base vide, les migrations versionnées et un premier compte ADMIN créé par l’écran Payload « create first user » ; le hook du projet attribue le rôle ADMIN uniquement lorsque la collection utilisateurs est vide. Aucun identifiant de démonstration n’est fourni.
 
 ## Production
 

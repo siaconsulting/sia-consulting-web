@@ -1,0 +1,27 @@
+[Unit]
+Description=SIA Consulting Next.js web application
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sia-app
+Group=sia-runtime
+WorkingDirectory=/srv/apps/sia-consulting-web/current
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3210
+EnvironmentFile=/srv/apps/sia-consulting-web/shared/.env
+ExecStart=/usr/bin/env pnpm run start -- --hostname 127.0.0.1 --port 3210
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/apps/sia-consulting-web/shared/media /srv/apps/sia-consulting-web/current/.next/cache
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

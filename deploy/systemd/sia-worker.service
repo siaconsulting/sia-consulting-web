@@ -1,0 +1,25 @@
+[Unit]
+Description=SIA Consulting Payload jobs worker
+After=network-online.target postgresql.service sia-web.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sia-app
+Group=sia-runtime
+WorkingDirectory=/srv/apps/sia-consulting-web/current
+Environment=NODE_ENV=production
+EnvironmentFile=/srv/apps/sia-consulting-web/shared/.env
+ExecStart=/usr/bin/env pnpm run jobs:run
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=60
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/apps/sia-consulting-web/current/.next/cache
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target
