@@ -3,7 +3,7 @@
 import type { PayloadAdminBarProps, PayloadMeUser } from '@payloadcms/admin-bar'
 
 import { cn } from '@/utilities/ui'
-import { useSelectedLayoutSegments } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { PayloadAdminBar } from '@payloadcms/admin-bar'
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -14,20 +14,16 @@ import { getClientSideURL } from '@/utilities/getURL'
 
 const baseClass = 'admin-bar'
 
-const collectionLabels = {
-  pages: {
-    plural: 'Pages',
-    singular: 'Page',
-  },
-  posts: {
-    plural: 'Posts',
-    singular: 'Post',
-  },
-  projects: {
-    plural: 'Projects',
-    singular: 'Project',
-  },
-}
+const frontendCollections = [
+  { path: '/expertises', slug: 'services', plural: 'Expertises', singular: 'Expertise' },
+  { path: '/secteurs', slug: 'sectors', plural: 'Secteurs', singular: 'Secteur' },
+  { path: '/formations', slug: 'trainings', plural: 'Formations', singular: 'Formation' },
+  { path: '/publications', slug: 'publications', plural: 'Publications', singular: 'Publication' },
+  { path: '/etudes-de-cas', slug: 'case-studies', plural: 'Études de cas', singular: 'Étude de cas' },
+  { path: '/ressources', slug: 'resources', plural: 'Ressources', singular: 'Ressource' },
+  { path: '/equipe', slug: 'team-members', plural: 'Équipe', singular: 'Membre' },
+  { path: '/references', slug: 'references', plural: 'Références', singular: 'Référence' },
+] as const
 
 const Title: React.FC = () => <span>Dashboard</span>
 
@@ -35,11 +31,11 @@ export const AdminBar: React.FC<{
   adminBarProps?: PayloadAdminBarProps
 }> = (props) => {
   const { adminBarProps } = props || {}
-  const segments = useSelectedLayoutSegments()
+  const pathname = usePathname()
   const [show, setShow] = useState(false)
-  const collection = (
-    collectionLabels[segments?.[1] as keyof typeof collectionLabels] ? segments[1] : 'pages'
-  ) as keyof typeof collectionLabels
+  const collection = frontendCollections.find(
+    ({ path }) => pathname === path || pathname.startsWith(`${path}/`),
+  )
   const router = useRouter()
 
   const onAuthChange = React.useCallback((user: PayloadMeUser) => {
@@ -63,11 +59,8 @@ export const AdminBar: React.FC<{
             user: 'text-white',
           }}
           cmsURL={getClientSideURL()}
-          collectionSlug={collection}
-          collectionLabels={{
-            plural: collectionLabels[collection]?.plural || 'Pages',
-            singular: collectionLabels[collection]?.singular || 'Page',
-          }}
+          collectionSlug={collection?.slug}
+          collectionLabels={collection ? { plural: collection.plural, singular: collection.singular } : undefined}
           logo={<Title />}
           onAuthChange={onAuthChange}
           onPreviewExit={() => {

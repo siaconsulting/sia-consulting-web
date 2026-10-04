@@ -1,18 +1,15 @@
-import Link from 'next/link'
-import React from 'react'
-
-import { Button } from '@/components/ui/button'
+import { ActionLink } from '@/components/sia/Action'
+import { Container } from '@/components/sia/Container'
 
 export default function NotFound() {
   return (
-    <div className="container py-28">
-      <div className="prose max-w-none">
-        <h1 style={{ marginBottom: 0 }}>404</h1>
-        <p className="mb-4">This page could not be found.</p>
-      </div>
-      <Button asChild variant="default">
-        <Link href="/">Go home</Link>
-      </Button>
-    </div>
+    <main className="sia-not-found">
+      <Container>
+        <p className="sia-editorial-eyebrow">SIA Consulting</p>
+        <h1>Cette page est introuvable.</h1>
+        <p>Le lien a peut-être changé ou cette page n’existe plus.</p>
+        <ActionLink href="/">Retour à l’accueil</ActionLink>
+      </Container>
+    </main>
   )
 }
