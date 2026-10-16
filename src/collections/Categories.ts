@@ -8,6 +8,7 @@ import { slugField } from 'payload'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
+  labels: { singular: 'Catégorie', plural: 'Catégories' },
   access: {
     create: adminOrEditor,
     delete: adminOnly,
@@ -15,12 +16,14 @@ export const Categories: CollectionConfig = {
     update: adminOrEditor,
   },
   admin: {
+    group: 'Bibliothèque',
     hidden: ({ user }) => !canManageEditorial(user),
     useAsTitle: 'title',
   },
   fields: [
     {
       name: 'title',
+      label: 'Titre',
       type: 'text',
       required: true,
     },

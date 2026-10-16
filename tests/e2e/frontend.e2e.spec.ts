@@ -75,6 +75,10 @@ test.describe('Frontend', () => {
       await page.setViewportSize({ width, height: 900 })
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
       expect(overflow, `horizontal overflow at ${width}px`).toBe(false)
+      if (width >= 1024) {
+        await expect(page.locator('.sia-header-cta')).toBeVisible()
+        await expect(page.locator('.sia-mobile-cta')).toBeHidden()
+      }
     }
   })
 
@@ -93,7 +97,7 @@ test.describe('Frontend', () => {
     const transitionDuration = await page.locator('[data-sia-header]').evaluate((element) =>
       getComputedStyle(element).transitionDuration,
     )
-    await expect(page.getByRole('heading', { level: 1, name: 'SIA Consulting' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     expect(transitionDuration).toBe('1e-05s')
   })
 
@@ -114,6 +118,7 @@ test.describe('Frontend', () => {
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await page.goto('/')
     await page.locator('.sia-home-hero-title').evaluate((heading, text) => {
+      heading.classList.remove('sia-home-hero-title--signature')
       heading.querySelector('span')!.textContent = text
     }, sampleTitle)
     await expect(page.locator('[data-home-hero]')).toHaveAttribute('data-motion-ready', 'true')
@@ -150,6 +155,7 @@ test.describe('Frontend', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto('/')
     await page.locator('.sia-home-hero-title').evaluate((heading, text) => {
+      heading.classList.remove('sia-home-hero-title--signature')
       heading.querySelector('span')!.textContent = text
     }, sampleTitle)
     await expect(page.getByRole('heading', { level: 1 })).toContainText(sampleTitle)
@@ -181,16 +187,6 @@ test.describe('Frontend', () => {
     await expect(page.locator('.sia-home-hero-title')).toBeInViewport()
 
     await page.setViewportSize({ width: 1440, height: 900 })
-    await page.locator('.sia-header-controls').evaluate((controls) => {
-      const anchor = document.createElement('a')
-      anchor.className = 'sia-action sia-header-cta'
-      anchor.textContent = 'Contact'
-      anchor.href = '/contact'
-      controls.append(anchor)
-      const header = controls.closest<HTMLElement>('[data-sia-header]')!
-      header.dataset.hero = 'true'
-      header.dataset.scrolled = 'false'
-    })
     const desktopCTA = page.locator('.sia-header-cta').last()
     await desktopCTA.hover()
     await expect(desktopCTA).toHaveCSS('background-color', 'rgb(77, 154, 173)')
@@ -203,13 +199,6 @@ test.describe('Frontend', () => {
 
     await page.setViewportSize({ width: 390, height: 844 })
     await page.locator('.sia-menu-toggle').click()
-    await page.locator('.sia-main-nav').evaluate((nav) => {
-      const anchor = document.createElement('a')
-      anchor.className = 'sia-action sia-mobile-cta'
-      anchor.textContent = 'Contact'
-      anchor.href = '/contact'
-      nav.append(anchor)
-    })
     const mobileButton = await page.locator('.sia-mobile-cta').evaluate((element) => {
       const { width, height, right } = element.getBoundingClientRect()
       return { width, height, right }

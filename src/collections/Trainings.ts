@@ -40,7 +40,7 @@ export const Trainings: CollectionConfig<'trainings'> = {
               label: 'Code formation',
               unique: true,
               index: true,
-              admin: { description: 'Référence catalogue facultative, distincte de l’identifiant Payload.' },
+              admin: { description: 'Référence catalogue facultative, distincte de l’identifiant interne.' },
             },
             {
               name: 'summary',

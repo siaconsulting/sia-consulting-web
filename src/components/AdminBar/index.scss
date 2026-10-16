@@ -1,7 +1,9 @@
-@import '@payloadcms/ui/scss';
-
-.admin-bar {
-  @include small-break {
-    display: none;
-  }
-}
+.sia-editor-bar { position: relative; z-index: 40; background: #071c28; color: #fff; border-bottom: 1px solid #476878; font-size: 0.875rem; }
+.sia-editor-bar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding-block: 0.5rem; }
+.sia-editor-bar-brand { font-weight: 700; text-decoration: none; }
+.sia-editor-bar-status { color: #bed5df; }
+.sia-editor-bar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.25rem; margin-left: auto; }
+.sia-editor-bar-actions a, .sia-editor-bar-actions button { display: inline-flex; align-items: center; min-height: 2rem; color: inherit; text-underline-offset: 4px; }
+.sia-editor-bar-actions button { border: 1px solid #6a889a; border-radius: 3px; padding: 0.25rem 0.6rem; background: transparent; cursor: pointer; }
+.sia-editor-bar-actions button:disabled { opacity: 0.6; cursor: wait; }
+@media (max-width: 40rem) { .sia-editor-bar-status { display: none; } .sia-editor-bar-actions { margin-left: 0; } }

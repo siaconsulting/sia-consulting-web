@@ -50,6 +50,7 @@ export const plugins: Plugin[] = [
   redirectsPlugin({
     collections: redirectCollections,
     overrides: {
+      labels: { singular: 'Redirection', plural: 'Redirections' },
       // @ts-expect-error - This is a valid override, mapped fields don't resolve to the same type
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
@@ -57,7 +58,7 @@ export const plugins: Plugin[] = [
             return {
               ...field,
               admin: {
-                description: 'You will need to rebuild the website when changing this field.',
+                description: 'Adresse à rediriger vers une autre page du site.',
               },
             }
           }
@@ -68,7 +69,7 @@ export const plugins: Plugin[] = [
         afterChange: [revalidateRedirects],
       },
       access: { create: adminOrEditor, delete: adminOnly, update: adminOrEditor },
-      admin: { hidden: ({ user }) => !canManageEditorial(user) },
+      admin: { group: 'Outils du site', hidden: ({ user }) => !canManageEditorial(user) },
     },
   }),
   nestedDocsPlugin({
@@ -88,12 +89,13 @@ export const plugins: Plugin[] = [
       payment: false,
     },
     formOverrides: {
+      labels: { singular: 'Formulaire', plural: 'Formulaires' },
       access: {
         create: adminOrEditor,
         delete: adminOnly,
         update: adminOrEditor,
       },
-      admin: { hidden: ({ user }) => !canManageEditorial(user) },
+      admin: { group: 'Outils du site', hidden: ({ user }) => !canManageEditorial(user) },
       fields: ({ defaultFields }) => {
         return defaultFields.map((field) => {
           if ('name' in field && field.name === 'confirmationMessage') {
@@ -115,8 +117,9 @@ export const plugins: Plugin[] = [
       },
     },
     formSubmissionOverrides: {
+      labels: { singular: 'Réponse de formulaire', plural: 'Réponses de formulaires' },
       access: { read: adminOnly, update: () => false, delete: adminOnly },
-      admin: { hidden: ({ user }) => !isAdmin(user) },
+      admin: { group: 'Outils du site', hidden: ({ user }) => !isAdmin(user) },
     },
   }),
   searchPlugin({
@@ -127,7 +130,7 @@ export const plugins: Plugin[] = [
     searchOverrides: {
       labels: { singular: 'Résultat de recherche', plural: 'Résultats de recherche' },
       access: { create: adminOnly, read: () => true, update: adminOnly, delete: adminOnly },
-      admin: { hidden: ({ user }) => !canManageEditorial(user) },
+      admin: { group: 'Outils du site', hidden: ({ user }) => !canManageEditorial(user) },
       fields: withLegacySearchRelations,
     },
   }),

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { getHomePageData } from '@/data/home'
 import { getSiteSettings } from '@/data/globals'
 import { getServerSideURL } from '@/utilities/getURL'
-import { HomeCaseStudy, HomeExpertises, HomeFinalCTA, HomeHero, HomeIntroduction, HomePublications, HomeReferences, HomeResources, HomeSectors, HomeTrainings } from '@/components/sia/HomePageSections'
+import { HomeExplore, HomeCaseStudy, HomeExpertises, HomeFinalCTA, HomeHero, HomeIntroduction, HomePublications, HomeReferences, HomeResources, HomeSectors, HomeTrainings } from '@/components/sia/HomePageSections'
 
 function mediaURL(media: unknown): string | undefined {
   if (!media || typeof media !== 'object' || !('url' in media) || typeof media.url !== 'string') return undefined
@@ -42,6 +42,7 @@ export default async function HomePage() {
   return (
     <>
       <HomeHero settings={data.settings} siteName={siteName} />
+      {!data.services.length && !data.trainings.length && !data.publications.length && <HomeExplore />}
       <HomeIntroduction text={data.settings.introduction} keyFigures={data.settings.keyFigures} />
       <HomeExpertises services={data.services} />
       <HomeSectors sectors={data.sectors} />

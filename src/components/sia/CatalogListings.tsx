@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { EmptyState } from '@/components/sia/EmptyState'
 import Link from 'next/link'
 import type { SectorListingItem } from '@/data/sectors'
 import type { ServiceListingItem } from '@/data/services'
@@ -36,7 +37,7 @@ export function ServicesListing({ docs, page, totalPages }: { docs: ServiceListi
                 </Link>
               </li>
             })}
-          </ol> : <p className="sia-catalog-empty">Aucune expertise n’est actuellement publiée.</p>}
+          </ol> : <EmptyState message="Aucune expertise n’est actuellement publiée." />}
         </Container>
       </Section>
       <EditorialPagination path={getCollectionListingPath('services')} page={page} totalPages={totalPages} />
@@ -57,7 +58,7 @@ export function SectorsListing({ docs, page, totalPages }: { docs: SectorListing
                 <div><h2>{sector.title}</h2><p>{sector.shortDescription}</p></div>
                 <span className="sia-sector-index-arrow" aria-hidden="true">↗</span>
               </Link>
-            </li>)}</ol> : <p className="sia-catalog-empty">Aucun secteur n’est actuellement publié.</p>}
+            </li>)}</ol> : <EmptyState message="Aucun secteur n’est actuellement publié." />}
         </Container>
       </Section>
       <EditorialPagination path={getCollectionListingPath('sectors')} page={page} totalPages={totalPages} />
@@ -82,7 +83,7 @@ export function TrainingsListing({ docs, page, totalPages }: { docs: TrainingLis
                 <div className="sia-training-index-copy"><p className="sia-catalog-context">{[training.code, training.duration, training.format ? formats[training.format] : null].filter(Boolean).join(' · ')}</p><h2>{training.title}</h2><p>{training.summary}</p></div>
                 <span className="sia-training-index-arrow" aria-hidden="true">↗</span>
               </Link>
-            </li>)}</ol> : <p className="sia-catalog-empty">Aucune formation n’est actuellement publiée.</p>}
+            </li>)}</ol> : <EmptyState message="Aucune formation n’est actuellement publiée." />}
           <p className="sia-training-catalog-note">Ce catalogue présente des formations, pas un calendrier de sessions.</p>
         </Container>
       </Section>

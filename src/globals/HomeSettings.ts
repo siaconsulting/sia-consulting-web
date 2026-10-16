@@ -16,7 +16,7 @@ export const HomeSettings: GlobalConfig = {
   access: { read: anyone, update: adminOrEditor },
   fields: [
     { type: 'tabs', tabs: [
-      { label: 'Hero', fields: [
+      { label: 'Présentation', fields: [
         { name: 'hero', type: 'group', label: 'Présentation principale', fields: [
           { name: 'eyebrow', type: 'text', label: 'Sur-titre' },
           { name: 'title', type: 'text', label: 'Titre principal' },

@@ -4,7 +4,7 @@ import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react'
 import type { ContactInformation, Footer as FooterData, Media } from '@/payload-types'
 import { getContactInformation, getFooterData, getSiteSettings } from '@/data/globals'
 import { PayloadLink, type PayloadLinkData } from '@/components/Link/PayloadLink'
-import { PUBLIC_PAGES } from '@/utilities/publicRoutes'
+import { PUBLIC_COLLECTION_LINKS, getCollectionListingPath, PUBLIC_PAGES } from '@/utilities/publicRoutes'
 
 const platformIcon = {
   linkedin: Linkedin,
@@ -24,7 +24,10 @@ function addressText(contact: ContactInformation) {
 
 function OldFooterLinks({ footer }: { footer: FooterData }) {
   const links = footer.navItems ?? []
-  if (!links.length) return null
+  if (!links.length) return <nav className="sia-footer-nav" aria-label="Navigation de pied de page">
+    {PUBLIC_COLLECTION_LINKS.map(({ label, collection }) => <Link key={collection} href={getCollectionListingPath(collection)}>{label}</Link>)}
+    <Link href={PUBLIC_PAGES.about}>À propos</Link>
+  </nav>
   return (
     <nav className="sia-footer-nav" aria-label="Navigation de pied de page">
       {links.map(({ link }, index) => <PayloadLink key={`${link.label}-${index}`} link={link as PayloadLinkData} />)}
@@ -62,14 +65,14 @@ export async function Footer() {
             {logo?.url ? (
               <Image src={logo.url} alt="" width={logo.width || 180} height={logo.height || 64} unoptimized />
             ) : (
-              <span className="sia-wordmark">{siteName}</span>
+              <Image src="/sia-logo.png" alt={siteName} width={364} height={223} unoptimized />
             )}
           </Link>
           {contact.hours && footer.showContactInformation !== false && <p>{contact.hours}</p>}
         </div>
 
         <h2 className="sia-footer-title" id="sia-footer-title">Contact</h2>
-        <p className="sia-footer-intro">Pour toute demande, retrouvez les coordonnées publiques de SIA Consulting.</p>
+        <p className="sia-footer-intro">Un projet, une question, un besoin de formation ? Échangeons.</p>
         <Link className="sia-footer-action" href={contactTarget} aria-label="Accéder aux coordonnées de contact">
           Nous joindre <span aria-hidden="true">↗</span>
         </Link>
@@ -100,7 +103,7 @@ export async function Footer() {
             {!columns.length && <OldFooterLinks footer={footer} />}
           </div>
 
-          <nav className="sia-footer-social" aria-label="Réseaux sociaux">
+          {networks.length > 0 && <nav className="sia-footer-social" aria-label="Réseaux sociaux">
             {networks.map(({ platform, url }) => {
               const Icon = platformIcon[platform as keyof typeof platformIcon]
               const label = platform === 'x' ? 'X' : platform.charAt(0).toUpperCase() + platform.slice(1)
@@ -111,7 +114,7 @@ export async function Footer() {
                 </a>
               )
             })}
-          </nav>
+          </nav>}
 
           {footer.legalLinks?.length ? (
             <nav className="sia-footer-legal" aria-label="Liens légaux">

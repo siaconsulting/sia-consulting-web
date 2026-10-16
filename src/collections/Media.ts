@@ -18,6 +18,7 @@ const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  labels: { singular: 'Média', plural: 'Médias' },
   folders: true,
   access: {
     create: adminOrEditor,
@@ -26,6 +27,7 @@ export const Media: CollectionConfig = {
     update: adminOrEditor,
   },
   admin: {
+    group: 'Bibliothèque',
     hidden: ({ user }) => !canManageEditorial(user),
   },
   fields: [

@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { EmptyState } from '@/components/sia/EmptyState'
 import Link from 'next/link'
 import type { CaseStudyListingItem } from '@/data/caseStudies'
 import type { PublicationListingItem } from '@/data/publications'
@@ -45,7 +46,7 @@ export function PublicationsListing({ docs, page, totalPages }: { docs: Publicat
   return <>
     <Section className="sia-content-list-section sia-publications-list" aria-label="Publications">
       <Container>
-        {!docs.length ? <p className="sia-catalog-empty">Aucune publication n’est actuellement disponible.</p> : <>
+        {!docs.length ? <EmptyState message="Aucune publication n’est actuellement disponible." /> : <>
           {featured && <article className="sia-publication-featured">
             <Link href={getCollectionDetailPath('publications', featured.slug)!} className="sia-publication-featured-art" aria-label={`Lire : ${featured.title}`}>
               <ListingMedia image={featured.coverImage} alt={featured.title} />
@@ -87,7 +88,7 @@ export function CaseStudiesListing({ docs, page, totalPages }: { docs: CaseStudy
   return <>
     <Section className="sia-content-list-section sia-case-list" aria-label="Études de cas">
       <Container>
-        {!docs.length ? <p className="sia-catalog-empty">Aucune étude de cas n’est actuellement disponible.</p> : <ol>
+        {!docs.length ? <EmptyState message="Aucune étude de cas n’est actuellement disponible." /> : <ol>
           {docs.map((study, index) => {
             const client = visibleClient(study)
             const href = getCollectionDetailPath('case-studies', study.slug)!
@@ -118,7 +119,7 @@ export function ResourcesListing({ docs, page, totalPages }: { docs: ResourceLis
   return <>
     <Section className="sia-content-list-section sia-resource-list" aria-label="Ressources publiques">
       <Container>
-        {!docs.length ? <p className="sia-catalog-empty">Aucune ressource n’est actuellement disponible.</p> : <ol>
+        {!docs.length ? <EmptyState message="Aucune ressource n’est actuellement disponible." /> : <ol>
           {docs.map((resource) => {
             const href = getCollectionDetailPath('resources', resource.slug)!
             return <li key={resource.id}><article>

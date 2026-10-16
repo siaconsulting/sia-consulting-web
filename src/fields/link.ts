@@ -7,11 +7,11 @@ export type LinkAppearances = 'default' | 'outline'
 
 export const appearanceOptions: Record<LinkAppearances, { label: string; value: string }> = {
   default: {
-    label: 'Default',
+    label: 'Plein',
     value: 'default',
   },
   outline: {
-    label: 'Outline',
+    label: 'Contour',
     value: 'outline',
   },
 }

@@ -32,6 +32,7 @@ import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { isAdmin } from './access/roles'
 import { notifySubmissionTask } from './jobs/notifySubmission'
+import { fr } from '@payloadcms/translations/languages/fr'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -75,13 +76,28 @@ const email = smtpTransportOptions
   : undefined
 
 export default buildConfig({
+  i18n: {
+    fallbackLanguage: 'fr',
+    supportedLanguages: { fr },
+    translations: { fr: { general: { collections: 'Contenus du site', globals: 'Réglages', payloadSettings: 'Paramètres de l’espace'  } } },
+  },
   admin: {
+    theme: 'light',
+    avatar: 'default',
+    dateFormat: 'dd/MM/yyyy HH:mm',
+    meta: {
+      titleSuffix: '| SIA Consulting',
+      description: 'Espace de gestion du site SIA Consulting.',
+      applicationName: 'SIA Consulting',
+      defaultOGImageType: 'off',
+      icons: { icon: '/sia-icon.svg', apple: '/sia-icon.svg' },
+      openGraph: { title: 'SIA Consulting — Administration', siteName: 'SIA Consulting', description: 'Espace de gestion du site SIA Consulting.', images: [] },
+      robots: { index: false, follow: false },
+    },
     components: {
-      // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
+      graphics: { Logo: '@/components/admin/Brand#AdminLogo', Icon: '@/components/admin/Brand#AdminIcon' },
+      afterNavLinks: ['@/components/admin/Brand#AdminSiteLink'],
       beforeLogin: ['@/components/BeforeLogin'],
-      // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
       beforeDashboard: ['@/components/BeforeDashboard'],
     },
     importMap: {

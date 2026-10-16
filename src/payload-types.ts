@@ -708,7 +708,7 @@ export interface Training {
   generateSlug?: boolean | null;
   slug: string;
   /**
-   * Référence catalogue facultative, distincte de l’identifiant Payload.
+   * Référence catalogue facultative, distincte de l’identifiant interne.
    */
   code?: string | null;
   /**
@@ -1646,7 +1646,7 @@ export interface TrainingRequest {
 export interface Redirect {
   id: number;
   /**
-   * You will need to rebuild the website when changing this field.
+   * Adresse à rediriger vers une autre page du site.
    */
   from: string;
   to?: {

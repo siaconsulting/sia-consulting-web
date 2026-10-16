@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { EmptyState } from '@/components/sia/EmptyState'
 import Link from 'next/link'
 import type { PublicReference } from '@/data/references'
 import type { TeamMemberDetail, TeamMemberItem } from '@/data/teamMembers'
@@ -19,7 +20,7 @@ export function TeamMembersListing({ docs, page, totalPages }: { docs: TeamMembe
   return <>
     <Section className="sia-team-list-section" aria-label="Membres de l’équipe">
       <Container>
-        {!docs.length ? <p className="sia-catalog-empty">Aucun profil public n’est actuellement disponible.</p> : <ol className="sia-team-list">
+        {!docs.length ? <EmptyState message="Aucun profil public n’est actuellement disponible." /> : <ol className="sia-team-list">
           {docs.map((person, index) => {
             const href = getCollectionDetailPath('team-members', person.slug)
             const portrait = media(person.photo)
@@ -94,7 +95,7 @@ const referenceTypes = { client: 'Client', partner: 'Partenaire', institution: '
 
 export function ReferencesListing({ references }: { references: PublicReference[] }) {
   return <Section className="sia-references-section" aria-label="Organisations présentées publiquement"><Container>
-    {!references.length ? <p className="sia-catalog-empty">Aucune référence n’est actuellement publiée.</p> : <ul className="sia-references-list">
+    {!references.length ? <EmptyState message="Aucune référence n’est actuellement publiée." /> : <ul className="sia-references-list">
       {references.map((reference) => {
         const logo = media(reference.logo)
         return <li key={reference.id}>

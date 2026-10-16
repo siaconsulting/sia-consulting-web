@@ -1,0 +1,112 @@
+/* SIA tokens are scoped to the administration to keep public styles independent. */
+@font-face {
+  font-family: 'SIA Admin';
+  src: url('../(frontend)/fonts/SourceSans3-wght.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+html:root {
+  --font-body: 'SIA Admin', 'Segoe UI', sans-serif;
+  --font-serif: 'SIA Admin', 'Segoe UI', sans-serif;
+  --theme-bg: #f5f8fa;
+  --theme-input-bg: #fff;
+  --theme-text: #102e40;
+  --theme-border-color: #cedce3;
+  --style-radius-s: 4px;
+  --style-radius-m: 7px;
+  --style-radius-l: 12px;
+  --nav-width: 270px;
+  --color-base-0: #fff;
+  --color-base-50: #f5f8fa;
+  --color-base-100: #eaf1f5;
+  --color-base-150: #dce7ed;
+  --color-base-200: #cedce3;
+  --color-base-250: #becfd8;
+  --color-base-300: #a8bdc9;
+  --color-base-350: #8ca7b6;
+  --color-base-400: #6a889a;
+  --color-base-450: #597889;
+  --color-base-500: #4c6c7e;
+  --color-base-550: #405f73;
+  --color-base-600: #35546a;
+  --color-base-650: #2e4b60;
+  --color-base-700: #264355;
+  --color-base-750: #203b4d;
+  --color-base-800: #193547;
+  --color-base-850: #142e3e;
+  --color-base-900: #102737;
+  --color-base-950: #0b2230;
+  --color-base-1000: #071c28;
+  --theme-success-500: #27617e;
+  --theme-success-600: #20536d;
+  --accessibility-outline: 2px solid #27617e;
+}
+
+html[data-theme='light'] { color-scheme: light; }
+.sia-admin-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.sia-admin-icon { display: block; width: 100%; height: 100%; object-fit: contain; }
+.sia-admin-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; width: 100%; }
+.sia-admin-brand img { width: 205px; height: auto; }
+.sia-admin-brand small { color: #526975; font-size: 14px; }
+.sia-admin-site-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; margin: 22px 0 8px; border-top: 1px solid #cedce3; padding: 16px 12px; color: #27617e; text-decoration: none; font-weight: 600; }
+.sia-admin-site-link:hover { background: #eaf1f5; }
+
+/* Shared surfaces: navigation, lists, editing, dialogs and account screens. */
+.nav { background: #fff; border-color: #dce7ed; }
+.nav__scroll { padding-inline: 18px; }
+.nav-group__toggle { color: #526975; font-size: 12px; font-weight: 600; padding-block: 10px; }
+.nav-group__content a { min-height: 36px; border-radius: 5px; padding: 7px 12px; transition: background-color 160ms ease, color 160ms ease; }
+.nav-group__content a:hover { background: #eaf1f5; color: #20536d; }
+.nav-group__content a.active { background: #eaf1f5; color: #20536d; font-weight: 700; }
+.app-header { background: #fff; border-bottom: 1px solid #dce7ed; }
+.dashboard { padding-top: 32px; }
+.dashboard .card { background: #fff; min-height: 100px; padding: 22px; border-color: #dce7ed; box-shadow: 0 2px 5px #102e4005; }
+.dashboard .card:hover { border-color: #6a889a; box-shadow: 0 4px 12px #102e400a; }
+.dashboard .card__title { font-size: 17px; line-height: 1.4; font-weight: 600; }
+.btn--style-primary { --bg-color: #27617e; --color: #fff; --hover-bg: #1e4f68; --hover-color: #fff; --btn-border: 1px solid #27617e; }
+.btn--style-primary:not(.btn--disabled):hover { background: #1e4f68; color: #fff; }
+.btn { border-radius: 6px; }
+.field-type input:not([type='checkbox']):not([type='radio']), .field-type textarea { border-radius: 6px; box-shadow: none; }
+.field-type input:focus, .field-type textarea:focus { border-color: #27617e; box-shadow: 0 0 0 3px #27617e1f; }
+.table { border: 1px solid #dce7ed; border-radius: 8px; background: #fff; }
+.table table th { background: #eaf1f5; color: #35546a; }
+.table table tbody tr:hover { background: #f0f6f8; }
+.doc-controls { background: #f5f8fa; border-color: #dce7ed; }
+.doc-tabs__tabs { border-color: #dce7ed; }
+.doc-tab--active { color: #20536d; }
+.pill { border-radius: 5px; }
+:where(button, a, input, select, textarea):focus-visible { outline: 2px solid #27617e; outline-offset: 3px; }
+
+/* One calm, branded treatment for all authentication and recovery screens. */
+.template-minimal {
+  position: relative;
+  isolation: isolate;
+  background: #eaf1f5;
+  padding: clamp(24px, 5vw, 72px);
+  min-height: 100svh;
+}
+.template-minimal::before { content: ''; position: absolute; z-index: -1; inset: 0 48% 0 0; background: #071c28; clip-path: polygon(0 0, 100% 0, 66% 100%, 0 100%); }
+.template-minimal .template-minimal__wrap { max-width: 510px; background: #fff; padding: clamp(28px, 4vw, 48px); border: 1px solid #dce7ed; border-radius: 12px; box-shadow: 0 24px 70px #071c2821; }
+.login__brand { justify-content: flex-start; margin-bottom: 32px; }
+.sia-admin-login-intro { margin-bottom: 28px; }
+.sia-admin-login-intro h1 { margin: 0 0 12px; font-size: clamp(27px, 3vw, 34px); line-height: 1.15; font-weight: 650; letter-spacing: -0.035em; }
+.sia-admin-login-intro p { margin: 0; color: #526975; font-size: 15px; line-height: 1.6; }
+.login__form .btn { width: 100%; min-height: 44px; }
+.login__form a { color: #27617e; text-underline-offset: 3px; }
+
+@media (max-width: 768px) {
+  html:root { --nav-width: 100vw; }
+  .dashboard { padding-top: 20px; }
+  .template-minimal { padding: 20px; }
+  .template-minimal::before { inset: 0 0 50%; clip-path: none; }
+  .template-minimal .template-minimal__wrap { padding: 28px 24px; }
+  .table { border-radius: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-group__content a, .dashboard .card, .btn { transition: none; }
+}
+
+.template-minimal__wrap:not(:has(.login__brand))::before { content: ''; display: block; width: 205px; max-width: 100%; height: 126px; margin-bottom: 28px; background: url('/sia-logo.png') left center / contain no-repeat; }
+.forgot-password__form .btn { min-height: 44px; }

@@ -32,6 +32,7 @@ export default async function ContactPage() {
   const address = [contact.streetAddress, contact.addressComplement, contact.poBox, [contact.postalCode, contact.city].filter(Boolean).join(' '), contact.region, contact.country].filter(Boolean)
   const socials = (settings.socialNetworks ?? []).filter((item) => item?.url && item.platform)
   const siteName = settings.siteName || settings.shortName || 'SIA Consulting'
+  const hasContactDetails = Boolean(contact.generalEmail || contact.primaryPhone || contact.secondaryPhone || address.length || contact.hours || socials.length)
 
   return <div className="sia-request-page sia-contact-page">
     <header className="sia-request-hero"><Container>
@@ -42,7 +43,7 @@ export default async function ContactPage() {
     <Section className="sia-contact-content"><Container>
       <div className="sia-contact-layout">
         <aside className="sia-contact-details" aria-label="Coordonnées publiques">
-          <h2>Coordonnées</h2>
+          <h2>{hasContactDetails ? 'Coordonnées' : 'Parlons de votre projet'}</h2>
           {contact.generalEmail && <p><span>E-mail</span><a href={`mailto:${contact.generalEmail}`}>{contact.generalEmail}</a></p>}
           {[contact.primaryPhone, contact.secondaryPhone].filter((phone): phone is string => Boolean(phone?.trim())).map((phone, index) => {
             const href = telHref(phone)
@@ -55,7 +56,7 @@ export default async function ContactPage() {
           {socials.length > 0 && <nav className="sia-contact-socials" aria-label="Réseaux sociaux">
             <h3>Réseaux sociaux</h3><ul>{socials.map((item) => <li key={`${item.platform}-${item.url}`}><a href={item.url!} target="_blank" rel="noopener noreferrer">{item.platform === 'x' ? 'X' : item.platform[0].toUpperCase() + item.platform.slice(1)} <span className="sia-visually-hidden">(ouvre un nouvel onglet)</span><span aria-hidden="true">↗</span></a></li>)}</ul>
           </nav>}
-          <p className="sia-contact-route-note">Vous souhaitez préciser une demande métier ?</p>
+          <p className="sia-contact-route-note">Pour une demande de conseil ou de formation, choisissez le formulaire adapté.</p>
           <ul className="sia-contact-request-links">
             <li><Link href={getPublicRoutePath('serviceRequest')}>Demande de prestation</Link></li>
             <li><Link href={getPublicRoutePath('trainingRequest')}>Demande de formation</Link></li>

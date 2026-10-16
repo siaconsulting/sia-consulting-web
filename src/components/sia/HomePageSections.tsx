@@ -57,22 +57,21 @@ function RichContent({ value, className = '' }: { value: CaseStudy['context']; c
 
 export function HomeHero({ settings, siteName }: { settings: HomeSetting; siteName: string }) {
   const hero = settings.hero
-  const title = hero?.title?.trim() || siteName
+  const title = hero?.title?.trim() || 'Actuariat. Assurance. Risques.'
+  const description = hero?.description?.trim() || 'Conseil et formation en actuariat, assurance et gestion des risques.'
   const image = populatedMedia(hero?.image)
 
   return (
     <section className="sia-home-hero" data-home-hero aria-labelledby="home-hero-title">
       <HomeHeroMotion />
       <Container className="sia-home-hero-content">
-        {hero?.eyebrow && <Eyebrow className="sia-home-hero-eyebrow">{hero.eyebrow}</Eyebrow>}
-        <h1 id="home-hero-title" className="sia-home-hero-title"><span>{title}</span></h1>
-        {hero?.description && <p className="sia-home-hero-description">{hero.description}</p>}
-        {(hero?.primaryCTA?.label || hero?.secondaryCTA?.label) && (
-          <div className="sia-home-hero-actions">
-            <HomeCTA value={hero.primaryCTA} />
-            <HomeCTA value={hero.secondaryCTA} variant="outline" />
-          </div>
-        )}
+        <Eyebrow className="sia-home-hero-eyebrow">{hero?.eyebrow || `${siteName} · Conseil & formation`}</Eyebrow>
+        <h1 id="home-hero-title" className={`sia-home-hero-title${hero?.title?.trim() ? '' : ' sia-home-hero-title--signature'}`}><span>{title}</span></h1>
+        <p className="sia-home-hero-description">{description}</p>
+        <div className="sia-home-hero-actions">
+          {hero?.primaryCTA?.label ? <HomeCTA value={hero.primaryCTA} /> : <Link className="sia-action sia-action--solid" href="/expertises">Découvrir nos expertises <span aria-hidden="true">↗</span></Link>}
+          {hero?.secondaryCTA?.label ? <HomeCTA value={hero.secondaryCTA} variant="outline" /> : <Link className="sia-action sia-action--outline" href="/contact">Parlons de votre projet <span aria-hidden="true">↗</span></Link>}
+        </div>
         <span className="sia-home-hero-scroll" aria-hidden="true">Défiler <span>↓</span></span>
       </Container>
       {image?.url && <HomeMedia media={image} alt={title} className="sia-home-hero-image" priority />}
@@ -254,4 +253,16 @@ export function HomeFinalCTA({ value }: { value: HomeSetting['finalCTA'] }) {
       </Container>
     </Section>
   )
+}
+
+export function HomeExplore() {
+  const links = [
+    { href: '/expertises', title: 'Expertises', description: 'Explorez nos domaines d’intervention.' },
+    { href: '/formations', title: 'Formations', description: 'Consultez le catalogue et précisez vos besoins.' },
+    { href: '/publications', title: 'Publications', description: 'Retrouvez nos analyses et nos perspectives.' },
+  ]
+  return <Section className="sia-home-explore" aria-labelledby="home-explore-title"><Container>
+    <div className="sia-home-explore-heading"><Eyebrow>SIA Consulting</Eyebrow><h2 id="home-explore-title">Une expertise à la mesure de vos enjeux.</h2><p>Découvrez nos domaines d’intervention, préparez une formation ou échangez avec notre équipe sur votre projet.</p></div>
+    <div className="sia-home-explore-links">{links.map((item) => <Link href={item.href} key={item.href}><h3>{item.title}</h3><p>{item.description}</p><span aria-hidden="true">↗</span></Link>)}</div>
+  </Container></Section>
 }

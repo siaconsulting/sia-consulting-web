@@ -1,82 +1,65 @@
 'use client'
 
 import type { PayloadAdminBarProps, PayloadMeUser } from '@payloadcms/admin-bar'
-
-import { cn } from '@/utilities/ui'
-import { usePathname } from 'next/navigation'
-import { PayloadAdminBar } from '@payloadcms/admin-bar'
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import './index.scss'
 
-import { getClientSideURL } from '@/utilities/getURL'
-
-const baseClass = 'admin-bar'
-
 const frontendCollections = [
-  { path: '/expertises', slug: 'services', plural: 'Expertises', singular: 'Expertise' },
-  { path: '/secteurs', slug: 'sectors', plural: 'Secteurs', singular: 'Secteur' },
-  { path: '/formations', slug: 'trainings', plural: 'Formations', singular: 'Formation' },
-  { path: '/publications', slug: 'publications', plural: 'Publications', singular: 'Publication' },
-  { path: '/etudes-de-cas', slug: 'case-studies', plural: 'Études de cas', singular: 'Étude de cas' },
-  { path: '/ressources', slug: 'resources', plural: 'Ressources', singular: 'Ressource' },
-  { path: '/equipe', slug: 'team-members', plural: 'Équipe', singular: 'Membre' },
-  { path: '/references', slug: 'references', plural: 'Références', singular: 'Référence' },
+  { path: '/expertises', slug: 'services' },
+  { path: '/secteurs', slug: 'sectors' },
+  { path: '/formations', slug: 'trainings' },
+  { path: '/publications', slug: 'publications' },
+  { path: '/etudes-de-cas', slug: 'case-studies' },
+  { path: '/ressources', slug: 'resources' },
+  { path: '/equipe', slug: 'team-members' },
+  { path: '/references', slug: 'references' },
 ] as const
 
-const Title: React.FC = () => <span>Dashboard</span>
-
-export const AdminBar: React.FC<{
-  adminBarProps?: PayloadAdminBarProps
-}> = (props) => {
-  const { adminBarProps } = props || {}
+export function AdminBar({ adminBarProps }: { adminBarProps?: PayloadAdminBarProps }) {
+  const [user, setUser] = useState<PayloadMeUser>(null)
+  const [leaving, setLeaving] = useState(false)
+  const [error, setError] = useState(false)
   const pathname = usePathname()
-  const [show, setShow] = useState(false)
-  const collection = frontendCollections.find(
-    ({ path }) => pathname === path || pathname.startsWith(`${path}/`),
-  )
   const router = useRouter()
+  const collection = frontendCollections.find(({ path }) => pathname === path || pathname.startsWith(`${path}/`))
 
-  const onAuthChange = React.useCallback((user: PayloadMeUser) => {
-    setShow(Boolean(user?.id))
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/users/me', { signal: controller.signal, credentials: 'same-origin' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => { if (!controller.signal.aborted) setUser(data?.user ?? null) })
+      .catch(() => { /* An unavailable session leaves the public page unchanged. */ })
+    return () => controller.abort()
   }, [])
 
-  return (
-    <div
-      className={cn(baseClass, 'py-2 bg-black text-white', {
-        block: show,
-        hidden: !show,
-      })}
-    >
-      <div className="container">
-        <PayloadAdminBar
-          {...adminBarProps}
-          className="py-2 text-white"
-          classNames={{
-            controls: 'font-medium text-white',
-            logo: 'text-white',
-            user: 'text-white',
-          }}
-          cmsURL={getClientSideURL()}
-          collectionSlug={collection?.slug}
-          collectionLabels={collection ? { plural: collection.plural, singular: collection.singular } : undefined}
-          logo={<Title />}
-          onAuthChange={onAuthChange}
-          onPreviewExit={() => {
-            fetch('/next/exit-preview').then(() => {
-              router.push('/')
-              router.refresh()
-            })
-          }}
-          style={{
-            backgroundColor: 'transparent',
-            padding: 0,
-            position: 'relative',
-            zIndex: 'unset',
-          }}
-        />
+  if (!user?.id) return null
+
+  async function exitPreview() {
+    setLeaving(true)
+    setError(false)
+    try {
+      const response = await fetch('/next/exit-preview')
+      if (!response.ok) throw new Error('Preview exit failed')
+      router.refresh()
+    } catch {
+      setError(true)
+    } finally {
+      setLeaving(false)
+    }
+  }
+
+  return <aside className="sia-editor-bar" aria-label="Outils d’administration">
+    <div className="container sia-editor-bar-inner">
+      <Link className="sia-editor-bar-brand" href="/admin">SIA · Administration</Link>
+      <span className="sia-editor-bar-status">{adminBarProps?.preview ? 'Mode aperçu' : 'Vous êtes connecté'}</span>
+      <div className="sia-editor-bar-actions">
+        {collection && <Link href={`/admin/collections/${collection.slug}`}>Gérer cette rubrique</Link>}
+        <Link href="/admin/account">Mon compte</Link>
+        {adminBarProps?.preview && <button type="button" onClick={exitPreview} disabled={leaving}>{leaving ? 'Fermeture…' : 'Quitter l’aperçu'}</button>}
       </div>
+      {error && <p role="alert">Impossible de fermer l’aperçu. Réessayez.</p>}
     </div>
-  )
+  </aside>
 }

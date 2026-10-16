@@ -20,7 +20,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { isEnabled } = await draftMode()
 
   return (
-    <html className={cn(brandFont.variable, bodyFont.variable)} lang="fr">
+    <html className={cn(brandFont.variable, bodyFont.variable)} lang="fr" data-scroll-behavior="smooth">
       <body>
         <AdminBar adminBarProps={{ preview: isEnabled }} />
         <SkipLink />
@@ -47,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(getServerSideURL()),
     title,
     description,
-    icons: favicon ? { icon: favicon } : undefined,
+    icons: { icon: favicon || '/sia-icon.svg' },
     openGraph: mergeOpenGraph({ title, description, images: socialImage ? [{ url: socialImage }] : [] }),
     twitter: { card: socialImage ? 'summary_large_image' : 'summary', images: socialImage ? [socialImage] : undefined },
   }

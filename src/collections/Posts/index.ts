@@ -30,6 +30,7 @@ import { slugField } from 'payload'
 
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
+  labels: { singular: 'Article', plural: 'Articles' },
   access: {
     create: adminOrEditor,
     delete: adminOnly,
@@ -49,6 +50,7 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
+    group: 'Contenus',
     hidden: ({ user }) => !canManageEditorial(user),
     defaultColumns: ['title', 'slug', 'updatedAt'],
     useAsTitle: 'title',
@@ -56,6 +58,7 @@ export const Posts: CollectionConfig<'posts'> = {
   fields: [
     {
       name: 'title',
+      label: 'Titre',
       type: 'text',
       required: true,
     },
@@ -88,7 +91,7 @@ export const Posts: CollectionConfig<'posts'> = {
               required: true,
             },
           ],
-          label: 'Content',
+          label: 'Contenu',
         },
         {
           fields: [

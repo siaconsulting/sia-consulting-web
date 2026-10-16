@@ -15,6 +15,7 @@ const assignFirstUserAdmin: CollectionBeforeValidateHook = async ({ data, operat
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  labels: { singular: 'Utilisateur', plural: 'Utilisateurs' },
   access: {
     admin: ({ req }) => hasKnownRole(req.user),
     create: adminOnly,
@@ -23,6 +24,7 @@ export const Users: CollectionConfig = {
     update: ({ id, req }) => (isAdmin(req.user) ? true : Boolean(req.user && id === req.user.id)),
   },
   admin: {
+    group: 'Administration',
     defaultColumns: ['name', 'email'],
     hidden: ({ user }) => !isAdmin(user),
     useAsTitle: 'name',
@@ -32,10 +34,12 @@ export const Users: CollectionConfig = {
   fields: [
     {
       name: 'name',
+      label: 'Nom',
       type: 'text',
     },
     {
       name: 'role',
+      label: 'Rôle',
       type: 'select',
       required: true,
       defaultValue: ROLE.editor,
@@ -45,8 +49,8 @@ export const Users: CollectionConfig = {
         update: ({ req }) => isAdmin(req.user),
       },
       options: [
-        { label: 'Admin', value: ROLE.admin },
-        { label: 'Editor', value: ROLE.editor },
+        { label: 'Administrateur', value: ROLE.admin },
+        { label: 'Éditeur', value: ROLE.editor },
         { label: 'Commercial', value: ROLE.commercial },
       ],
     },

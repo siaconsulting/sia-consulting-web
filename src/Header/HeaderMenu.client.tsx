@@ -18,15 +18,17 @@ function MenuAnchor({ item, className, onNavigate }: {
   className: string
   onNavigate?: () => void
 }) {
+  const pathname = usePathname()
+  const active = item.href === pathname || (item.href !== '/' && pathname.startsWith(`${item.href}/`))
   const external = /^(https:|mailto:|tel:)/.test(item.href)
   const target = item.newTab ? '_blank' : undefined
   const rel = target ? 'noopener noreferrer' : undefined
 
   if (external || target) {
-    return <a className={className} href={item.href} target={target} rel={rel} onClick={onNavigate}>{item.label}</a>
+    return <a className={className} aria-current={active ? 'page' : undefined} href={item.href} target={target} rel={rel} onClick={onNavigate}>{item.label}</a>
   }
 
-  return <Link className={className} href={item.href} onClick={onNavigate}>{item.label}</Link>
+  return <Link className={className} aria-current={active ? 'page' : undefined} href={item.href} onClick={onNavigate}>{item.label}</Link>
 }
 
 export function HeaderMenu({ navItems, cta }: Props) {
@@ -67,6 +69,11 @@ export function HeaderMenu({ navItems, cta }: Props) {
 
   useEffect(() => {
     if (!open) return
+    const onOutsideClick = (event: PointerEvent) => {
+      const header = document.querySelector('[data-sia-header]')
+      if (event.target instanceof Node && !header?.contains(event.target)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', onOutsideClick)
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false)
@@ -74,7 +81,10 @@ export function HeaderMenu({ navItems, cta }: Props) {
       }
     }
     document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('pointerdown', onOutsideClick)
+    }
   }, [open])
 
   useEffect(() => {

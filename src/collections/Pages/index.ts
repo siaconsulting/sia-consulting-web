@@ -24,6 +24,7 @@ import {
 
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
+  labels: { singular: 'Page', plural: 'Pages' },
   access: {
     create: adminOrEditor,
     delete: adminOnly,
@@ -38,6 +39,7 @@ export const Pages: CollectionConfig<'pages'> = {
     slug: true,
   },
   admin: {
+    group: 'Contenus',
     hidden: ({ user }) => !canManageEditorial(user),
     defaultColumns: ['title', 'slug', 'updatedAt'],
     useAsTitle: 'title',
@@ -45,6 +47,7 @@ export const Pages: CollectionConfig<'pages'> = {
   fields: [
     {
       name: 'title',
+      label: 'Titre',
       type: 'text',
       required: true,
     },
@@ -53,7 +56,7 @@ export const Pages: CollectionConfig<'pages'> = {
       tabs: [
         {
           fields: [hero],
-          label: 'Hero',
+          label: 'Présentation',
         },
         {
           fields: [
@@ -67,7 +70,7 @@ export const Pages: CollectionConfig<'pages'> = {
               },
             },
           ],
-          label: 'Content',
+          label: 'Contenu',
         },
         {
           name: 'meta',
